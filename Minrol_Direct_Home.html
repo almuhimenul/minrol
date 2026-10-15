@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Minrol — Focus & Time Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@600;800&family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --text: #171a26;
+  --muted: #5d6479;
+  --border: #e1e5f0;
+  --accent: #5b5bf0;
+  --accent-text: #ffffff;
+  --ok: #16a34a;
+  --ok-bg: #dcfce7;
+  --ok-text: #14532d;
+  --warn: #d97706;
+  --warn-bg: #fef3c7;
+  --danger: #e11d48;
+  --chip: #eef0fa;
+  --shadow: 0 6px 20px rgba(40, 50, 110, .08);
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0e18; --card: #151a2b; --text: #eef0f8; --muted: #a3abc4; --border: #262d47;
+    --accent: #8b8bff; --accent-text: #0b0e18;
+    --ok: #4ade80; --ok-bg: #12331f; --ok-text: #bbf7d0;
+    --warn: #fbbf24; --warn-bg: #3a2d0c; --danger: #fb7185; --chip: #1e243b;
+    --shadow: 0 6px 20px rgba(0, 0, 0, .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b0e18; --card: #151a2b; --text: #eef0f8; --muted: #a3abc4; --border: #262d47;
+  --accent: #8b8bff; --accent-text: #0b0e18;
+  --ok: #4ade80; --ok-bg: #12331f; --ok-text: #bbf7d0;
+  --warn: #fbbf24; --warn-bg: #3a2d0c; --danger: #fb7185; --chip: #1e243b;
+  --shadow: 0 6px 20px rgba(0, 0, 0, .35);
+  color-scheme: dark;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: "Noto Sans Bengali", "Hind Siliguri", "Nirmala UI", "Kalpurush", system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.55; -webkit-tap-highlight-color: transparent;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+.display { font-family: "Baloo Da 2", "Noto Sans Bengali", "Nirmala UI", system-ui, sans-serif; }
+
+.app { max-width: 760px; margin: 0 auto; padding: 12px 14px 104px; }
+.top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.logo { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 22px;
+  background: linear-gradient(135deg, #5b5bf0, #be185d); box-shadow: var(--shadow); }
+.brand b { display: block; font-size: 1.05rem; line-height: 1.2; }
+.brand small { color: var(--muted); font-size: .74rem; }
+.icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); font-size: 18px; }
+
+/* nav */
+.nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; gap: 3px; justify-content: center;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px)); background: color-mix(in srgb, var(--card) 92%, transparent);
+  backdrop-filter: blur(10px); border-top: 1px solid var(--border); }
+.nav button { flex: 1; max-width: 150px; border: 0; background: transparent; border-radius: 14px; padding: 6px 4px; color: var(--muted);
+  display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: .68rem; font-weight: 600; }
+.nav button .ni { font-size: 20px; transition: transform .25s; }
+.nav button[aria-current="page"] { color: var(--accent); background: var(--chip); }
+.nav button[aria-current="page"] .ni { transform: translateY(-2px) scale(1.12); }
+
+/* hero */
+.hero { position: relative; overflow: hidden; border-radius: 24px; padding: 20px 18px 18px; color: #fff; box-shadow: var(--shadow);
+  background: linear-gradient(120deg, #4338ca, #7c3aed, #be185d, #c2410c, #4338ca); background-size: 300% 300%;
+  animation: gradMove 14s ease infinite; }
+@keyframes gradMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+.hero .greet { font-size: .95rem; opacity: .95; margin: 0; position: relative; z-index: 2; }
+.hero .greet button { background: none; border: 0; color: #fff; padding: 0; text-decoration: underline dotted; font-weight: 700; }
+.qwrap { position: relative; z-index: 2; margin: 10px 0 8px; min-height: 142px; transition: opacity .25s, transform .25s; }
+.qwrap.out { opacity: 0; transform: translateY(8px); }
+.qbn { font-size: 1.45rem; line-height: 1.35; margin: 0 0 6px; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,.25); }
+.qen { font-size: 1rem; margin: 0; opacity: .94; font-style: italic; }
+.hero .row { position: relative; z-index: 2; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.pill-btn { border: 1px solid rgba(255,255,255,.55); background: rgba(255,255,255,.16); color: #fff; padding: 7px 14px; border-radius: 999px; font-weight: 600; font-size: .86rem; }
+.pill-btn:active { transform: scale(.96); }
+.dream { position: relative; z-index: 2; margin: 12px 0 0; padding: 8px 12px; border-radius: 14px; background: rgba(0,0,0,.2); font-size: .9rem; width: 100%; text-align: left; border: 0; color: #fff; }
+.floaty { position: absolute; bottom: -30px; font-size: 22px; opacity: 0; z-index: 1; animation: floatUp 9s linear infinite; pointer-events: none; }
+@keyframes floatUp { 0% { transform: translateY(0) rotate(0); opacity: 0; } 12% { opacity: .85; } 100% { transform: translateY(-260px) rotate(40deg); opacity: 0; } }
+
+/* ticker */
+.ticker { overflow: hidden; margin: 12px 0; border-radius: 14px; background: var(--card); border: 1px solid var(--border); }
+.ticker .track { display: inline-flex; white-space: nowrap; padding: 9px 0; animation: marquee 28s linear infinite; font-weight: 700; color: var(--accent); }
+.ticker .track span { padding: 0 20px; }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* cards */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 14px; box-shadow: var(--shadow); }
+.card h3 { margin: 0 0 8px; font-size: 1rem; }
+.muted { color: var(--muted); font-size: .85rem; }
+.ringbox { display: flex; align-items: center; gap: 14px; }
+.ring { position: relative; width: 116px; height: 116px; flex: none; }
+.ring svg { transform: rotate(-90deg); }
+.ring .bg { stroke: var(--chip); }
+.ring .fg { stroke: url(#rg); stroke-linecap: round; transition: stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1); }
+.ring .num { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 800; font-size: 1.5rem; }
+.ring .num small { font-size: .8rem; font-weight: 600; }
+.big { font-size: 1.9rem; font-weight: 800; line-height: 1.1; }
+.flame { display: inline-block; animation: flicker 1.1s ease-in-out infinite alternate; transform-origin: 50% 90%; }
+@keyframes flicker { from { transform: scale(1) rotate(-3deg); } to { transform: scale(1.18) rotate(3deg); } }
+.dots { display: flex; gap: 5px; margin: 8px 0; }
+.dot { flex: 1; text-align: center; font-size: .66rem; color: var(--muted); }
+.dot i { display: block; width: 100%; aspect-ratio: 1; max-width: 26px; margin: 0 auto 2px; border-radius: 50%; background: var(--chip); border: 1px solid var(--border); }
+.dot.on i { background: var(--ok); border-color: var(--ok); }
+.dot.now i { outline: 2px solid var(--accent); outline-offset: 1px; }
+.btn { border: 0; border-radius: 12px; padding: 9px 14px; font-weight: 700; background: var(--accent); color: var(--accent-text); }
+.btn.ghost { background: var(--chip); color: var(--text); }
+.btn.ok { background: var(--ok); color: #fff; }
+.btn.danger { background: transparent; color: var(--danger); border: 1px solid var(--border); }
+.btn:active { transform: scale(.97); }
+.btn.pulse { animation: pulse 1.8s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(91,91,240,.5); } 50% { box-shadow: 0 0 0 9px rgba(91,91,240,0); } }
+.bar { height: 10px; border-radius: 99px; background: var(--chip); overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--c, var(--accent)); transition: width 1s cubic-bezier(.2,.8,.2,1); }
+.bar.green > i { background: var(--ok); }
+.subj { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 8px 0; }
+.subj .l { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-weight: 700; font-size: .92rem; }
+.nextbox { display: flex; gap: 12px; align-items: center; }
+.nextbox .em { font-size: 30px; }
+
+h2.pt { font-size: 1.25rem; margin: 6px 0 12px; }
+.sec { margin: 12px 0; }
+
+/* chapters */
+.pills { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+.pills::-webkit-scrollbar { display: none; }
+.spill { flex: none; border: 1.5px solid var(--border); background: var(--card); border-radius: 14px; padding: 8px 12px; font-weight: 700; font-size: .88rem; display: flex; align-items: center; gap: 6px; }
+.spill[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--card)); color: var(--text); }
+.seg { position:relative; display:flex; gap:4px; background:var(--chip); border-radius:14px; padding:4px; margin:8px 0; overflow:hidden; touch-action:pan-y; user-select:none; -webkit-user-select:none; }
+.seg.is-dragging .seg-thumb { transition:none !important; }
+.seg .seg-thumb { position:absolute; z-index:0; top:4px; bottom:4px; left:4px; width:calc(50% - 6px); border-radius:10px; background:var(--card); box-shadow:var(--shadow); transform:translateX(0); transition:transform 200ms cubic-bezier(.22,.8,.25,1); pointer-events:none; }
+.seg[data-active="p2"] .seg-thumb { transform:translateX(calc(100% + 4px)); }
+.seg button { position:relative; z-index:1; flex:1 1 50%; min-width:0; border:0; background:transparent; border-radius:10px; padding:9px 12px; font-weight:700; color:var(--muted); white-space:nowrap; transition:color 300ms ease; }
+.seg button[aria-pressed="true"] { color:var(--text); } 
+.paper-stage { transform:translateX(0); opacity:1; }
+.paper-stage.paper-enter-next { animation:paperEnterNext 200ms cubic-bezier(.22,.8,.25,1) both; }
+.paper-stage.paper-enter-prev { animation:paperEnterPrev 200ms cubic-bezier(.22,.8,.25,1) both; }
+@keyframes paperEnterNext { from { opacity:.25; transform:translateX(34px); } to { opacity:1; transform:translateX(0); } }
+@keyframes paperEnterPrev { from { opacity:.25; transform:translateX(-34px); } to { opacity:1; transform:translateX(0); } }
+.paperhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0 6px; }
+.chlist { display: grid; gap: 8px; margin-top: 10px; }
+.ch { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 10px 10px 10px 12px;
+  transition: background .35s, border-color .35s, transform .15s; }
+.ch .no { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--chip); font-weight: 800; }
+.ch .nm { flex: 1; min-width: 0; text-align: left; background: none; border: 0; padding: 4px 0; font-weight: 600; font-size: .98rem; line-height: 1.35; }
+.ch .tick { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border); display: grid; place-items: center; color: transparent; font-weight: 800; background: none; transition: all .3s; }
+.ch .mini { flex: none; border: 1px solid var(--border); background: var(--chip); border-radius: 999px; padding: 3px 9px; font-size: .72rem; font-weight: 700; color: var(--muted); }
+.ch.doing { border-color: var(--warn); background: color-mix(in srgb, var(--warn-bg) 55%, var(--card)); }
+.ch.doing .mini { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+.ch.done { border-color: var(--ok); background: var(--ok-bg); }
+.ch.done .no { background: var(--ok); color: #fff; }
+.ch.done .nm { color: var(--ok-text); }
+.ch.done .tick { background: var(--ok); border-color: var(--ok); color: #fff; }
+.ch.pop .tick { animation: pop .5s cubic-bezier(.2,1.6,.4,1); }
+.ch.pop { animation: glow .9s ease-out; }
+@keyframes pop { 0% { transform: scale(.3); } 100% { transform: scale(1); } }
+@keyframes glow { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,.65); } 100% { box-shadow: 0 0 0 16px rgba(34,197,94,0); } }
+.ch .eb { flex: none; width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); }
+.celebrate { margin: 10px 0; padding: 12px; border-radius: 16px; background: var(--ok-bg); color: var(--ok-text); font-weight: 700; text-align: center; border: 1.5px solid var(--ok); }
+.addrow { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+/* forms */
+.field { width: 100%; border: 1.5px solid var(--border); background: var(--card); border-radius: 12px; padding: 10px 12px; }
+.field:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.frow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+@media (max-width: 420px) { .frow { grid-template-columns: 1fr; } }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip { border: 1px dashed var(--border); background: var(--chip); border-radius: 999px; padding: 5px 11px; font-size: .78rem; font-weight: 600; }
+.item { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border: 1.5px solid var(--border); border-radius: 16px; background: var(--card); margin-top: 8px; }
+.item .body { flex: 1; min-width: 0; }
+.item .tt { font-weight: 700; word-break: break-word; }
+.goal-countdown{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
+.item.done { background: var(--ok-bg); border-color: var(--ok); }
+.item.done .tt { text-decoration: line-through; color: var(--ok-text); }
+.item.past { opacity: .6; }
+.chk { flex: none; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--border); background: none; color: transparent; font-weight: 800; display: grid; place-items: center; }
+.item.done .chk { background: var(--ok); border-color: var(--ok); color: #fff; }
+.del { flex: none; border: 0; background: none; font-size: 18px; padding: 6px; }
+.badge { display: inline-block; font-size: .72rem; font-weight: 700; padding: 2px 9px; border-radius: 99px; background: var(--chip); margin-right: 6px; }
+.badge.hot { background: var(--warn-bg); color: var(--warn); }
+.badge.now { background: #fee2e2; color: #b91c1c; }
+:root[data-theme="dark"] .badge.now { background: #3b1218; color: #fda4af; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .badge.now { background: #3b1218; color: #fda4af; } }
+.stepper { display: flex; align-items: center; gap: 12px; }
+.stepper .v { min-width: 44px; text-align: center; font-size: 1.6rem; font-weight: 800; }
+.stepper button { width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--border); background: var(--chip); font-size: 20px; font-weight: 800; }
+.empty { text-align: center; color: var(--muted); padding: 22px 10px; }
+
+/* modal + toast */
+.modal { position: fixed; inset: 0; z-index: 50; background: rgba(5, 8, 20, .55); display: grid; place-items: center; padding: 20px; }
+.mcard { width: 100%; max-width: 380px; background: var(--card); border-radius: 20px; padding: 18px; border: 1px solid var(--border); box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+.mcard h3 { margin: 0 0 10px; font-size: 1.05rem; }
+.mcard .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+.event-add-clean{display:flex;justify-content:flex-end;margin:8px 0 14px}.goal-dialog{max-width:390px;padding:22px;border-radius:24px;background:var(--card);border:1px solid color-mix(in srgb,var(--border) 75%,transparent);box-shadow:0 24px 70px rgba(0,0,0,.28)}.goal-dialog .event-dialog-head{padding-bottom:13px;border-bottom:1px solid var(--border);margin-bottom:18px}.goal-dialog .event-dialog-head h3{font-size:1.12rem;letter-spacing:-.02em}.goal-dialog .event-label{margin:13px 0 7px;font-size:.76rem;letter-spacing:.025em;text-transform:none}.goal-dialog .field{min-height:45px;border-radius:13px;background:var(--bg);font-size:.92rem}.goal-dialog .event-dialog-actions{padding-top:14px;border-top:1px solid var(--border);margin-top:20px}.goal-dialog .event-dialog-actions .btn{min-width:100px}.event-dialog{max-width:420px;max-height:88vh;overflow:auto}.event-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.event-dialog-head h3{margin:0}.event-dialog-close{width:34px;height:34px;border:0;border-radius:10px;background:var(--chip);color:var(--text);font-size:24px;line-height:1}.event-label{display:block;font-size:.82rem;font-weight:700;color:var(--muted);margin:10px 0 6px}.event-field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.event-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.toast { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); z-index: 40;
+  background: #111827; color: #fff; padding: 10px 16px; border-radius: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: all .3s; max-width: 90vw; text-align: center; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 45; }
+
+/* requested event carousel + chapter study controls + stopwatch */
+.event-stage { overflow-x:auto; overflow-y:hidden; border-radius:20px; padding:8px 3px 14px; perspective:900px; touch-action:pan-x; -webkit-overflow-scrolling:touch; scrollbar-width:none; cursor:grab; }
+.event-stage::-webkit-scrollbar { display:none; }
+.event-stage:active { cursor:grabbing; }
+.event-track { display:flex; gap:10px; width:max-content; will-change:transform; }
+.event-stage:active .event-track, .event-stage:focus-within .event-track { animation-play-state:paused; }
+.event-card { flex:0 0 240px; min-width:0; min-height:142px; padding:12px 9px; border-radius:17px; color:#fff; background:linear-gradient(145deg,#252b67,#6558d9 55%,#c04caa); border:1px solid rgba(255,255,255,.35); box-shadow:0 7px 0 #30285f,0 14px 22px rgba(48,40,95,.24),inset 0 1px 0 rgba(255,255,255,.4); transform:rotateY(-5deg) rotateX(2deg); overflow:hidden; }
+.event-card:nth-child(3n+2){background:linear-gradient(145deg,#075985,#0891b2 58%,#38bdf8);box-shadow:0 7px 0 #07506e,0 14px 22px rgba(8,145,178,.2),inset 0 1px 0 rgba(255,255,255,.4)}
+.event-card:nth-child(3n){background:linear-gradient(145deg,#7c2d12,#ea580c 58%,#fb7185);box-shadow:0 7px 0 #7c2d12,0 14px 22px rgba(234,88,12,.2),inset 0 1px 0 rgba(255,255,255,.4)}
+.goal-feature{margin:12px 0}.goal-card{flex:0 0 240px;min-width:0;min-height:142px;padding:12px 9px;border-radius:17px;color:#fff;background:linear-gradient(145deg,#064e3b,#059669 58%,#34d399);border:1px solid rgba(255,255,255,.35);box-shadow:0 7px 0 #065f46,0 14px 22px rgba(5,150,105,.2),inset 0 1px 0 rgba(255,255,255,.4);transform:rotateY(-5deg) rotateX(2deg);overflow:hidden}.goal-card:nth-child(3n+2){background:linear-gradient(145deg,#14532d,#16a34a 58%,#86efac);box-shadow:0 7px 0 #166534,0 14px 22px rgba(22,163,74,.2),inset 0 1px 0 rgba(255,255,255,.4)}.goal-card:nth-child(3n){background:linear-gradient(145deg,#365314,#65a30d 58%,#bef264);box-shadow:0 7px 0 #3f6212,0 14px 22px rgba(101,163,13,.2),inset 0 1px 0 rgba(255,255,255,.4)}.goal-card .goal-card-title{font-size:.82rem;font-weight:800;line-height:1.35;overflow-wrap:anywhere;margin:5px 0}.goal-card .goal-card-date{font-size:.67rem;opacity:.92;line-height:1.4}.goal-card .goal-card-count{font-size:.78rem;font-weight:800;margin-top:7px;padding:4px 6px;background:rgba(0,0,0,.22);border-radius:9px;display:inline-block}.goal-card .goal-card-progress{height:6px;border-radius:99px;background:rgba(0,0,0,.22);overflow:hidden;margin-top:9px}.goal-card .goal-card-progress i{display:block;height:100%;background:#fff;border-radius:99px}.event-card .event-icon{font-size:1.3rem}.event-card .event-title{font-size:.82rem;font-weight:800;line-height:1.35;overflow-wrap:anywhere;margin:5px 0}.event-card .event-date{font-size:.67rem;opacity:.92;line-height:1.4}.event-card .event-count{font-size:.78rem;font-weight:800;margin-top:7px;padding:4px 6px;background:rgba(0,0,0,.22);border-radius:9px;display:inline-block}
+@keyframes eventDrift { from{transform:translateX(0)} to{transform:translateX(0)} }
+.chosen-study { flex-basis:100%; display:flex; gap:8px; padding:4px 0 2px 44px; }
+.study-part { flex:1; border:1px solid var(--border); border-radius:11px; padding:7px 5px; background:var(--chip); font-weight:800; font-size:.8rem; }
+.study-part.on { background:var(--ok-bg); border-color:var(--ok); color:var(--ok-text); }
+.ch .nm { min-width:0; }
+.timer-shell { min-height:calc(100dvh - 145px); border-radius:26px; padding:22px 16px; color:#f8fafc; background:radial-gradient(circle at 50% 0%,#343a75 0,#171b35 48%,#090b16 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; box-shadow:0 18px 45px rgba(15,23,42,.28); }
+.timer-shell:fullscreen { min-height:100dvh; border-radius:0; width:100%; }
+.timer-label { color:#bfc7ff; font-weight:700; letter-spacing:.08em; }
+.timer-digits { font:800 clamp(2.7rem,12vw,5rem)/1.1 ui-monospace,SFMono-Regular,Consolas,monospace; letter-spacing:-.06em; font-variant-numeric:tabular-nums; text-shadow:0 0 28px rgba(129,140,248,.25); }
+.timer-millis { font-size:.38em; color:#9ca3af; letter-spacing:0; }
+.timer-actions { display:flex; flex-wrap:wrap; justify-content:center; gap:9px; }
+.timer-actions .btn { min-width:78px; font-size:.78rem; padding:8px 10px; letter-spacing:.01em; }
+.timer-set { display:flex; gap:7px; justify-content:center; flex-wrap:wrap; align-items:center; }
+.timer-set label { font-size:.78rem; color:#cbd5e1; display:grid; gap:4px; }
+.timer-set input { width:70px; text-align:center; border:1px solid #424969; border-radius:10px; background:#11162a; color:white; padding:8px 4px; }
+.timer-mode { display:flex; gap:5px; background:#11162a; padding:4px; border-radius:13px; }
+.timer-mode button { border:0; border-radius:10px; background:transparent; color:#b9c1d9; padding:8px 12px; font-weight:700; }
+.timer-mode button[aria-pressed="true"] { background:#5558dc; color:#fff; }
+@media(max-width:380px){.event-card,.goal-card{padding:9px 7px;min-height:132px}.event-card .event-title,.goal-card .goal-card-title{font-size:.73rem}.event-card .event-date,.goal-card .goal-card-date{font-size:.61rem}.event-card .event-count,.goal-card .goal-card-count{font-size:.68rem}}
+@media(prefers-reduced-motion:reduce){.event-track{animation:none}}
+
+/* Clock workspace selector + Countdown controls (isolated additions) */
+.clock-switch{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:3px;margin:0 0 10px;border:1px solid var(--border);border-radius:12px;background:var(--chip);overflow:hidden;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.clock-switch.is-dragging .clock-thumb{transition:none !important}
+.clock-switch .clock-thumb{position:absolute;z-index:0;top:3px;bottom:3px;left:3px;width:calc(50% - 5px);border-radius:9px;background:var(--card);box-shadow:0 1px 5px rgba(0,0,0,.12);transform:translateX(0);transition:transform 200ms cubic-bezier(.22,.8,.25,1);pointer-events:none}
+.clock-switch[data-active="countdown"] .clock-thumb{transform:translateX(calc(100% + 4px))}
+.clock-switch button{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:6px 9px;border:0;border-radius:9px;background:transparent;color:var(--muted);font:inherit;font-weight:750;cursor:pointer;transition:color 300ms ease}
+.clock-switch button[aria-pressed="true"]{color:var(--text)}
+#page-stopwatch.clock-enter-next .timer-shell{animation:paperEnterNext 200ms cubic-bezier(.22,.8,.25,1) both}
+#page-stopwatch.clock-enter-prev .timer-shell{animation:paperEnterPrev 200ms cubic-bezier(.22,.8,.25,1) both}
+.clock-switch svg{width:18px;height:18px;flex:0 0 auto}
+.countdown-set{display:flex;align-items:flex-end;justify-content:center;gap:8px;flex-wrap:wrap;width:100%;max-width:390px}
+.countdown-set label{display:grid;gap:5px;min-width:0;color:#cbd5e1;font-size:.76rem;font-weight:700;text-align:center}
+.countdown-set input{width:76px;max-width:24vw;box-sizing:border-box;text-align:center;border:1px solid #424969;border-radius:10px;background:#11162a;color:#fff;padding:10px 5px;font:700 1rem ui-monospace,SFMono-Regular,Consolas,monospace;outline:none}
+.countdown-set input:focus{border-color:#818cf8;box-shadow:0 0 0 3px #818cf833}
+.countdown-hint{color:#aab5d2;font-size:.8rem;max-width:34rem;line-height:1.5}
+@media(max-width:380px){.clock-switch button{font-size:.84rem;min-height:34px;padding:5px 5px;gap:5px}.countdown-set{gap:5px}.countdown-set input{width:68px;padding:9px 3px}}
+.timer-shell:fullscreen .countdown-set,.timer-shell.is-immersive .countdown-set,.timer-shell:fullscreen .countdown-hint,.timer-shell.is-immersive .countdown-hint{display:none!important}
+
+/* immersive stopwatch fullscreen — clean, gesture-first */
+.timer-shell:fullscreen,.timer-shell.is-immersive{position:fixed;inset:0;z-index:9999;width:100vw;height:100dvh;min-height:100dvh;box-sizing:border-box;border-radius:0;padding:0;gap:0;overflow:hidden;justify-content:center;background:#050812;touch-action:none;user-select:none;-webkit-user-select:none}
+.timer-shell:fullscreen .timer-digits,.timer-shell.is-immersive .timer-digits{font-size:clamp(3rem, min(25vw, 46vh), 13rem);line-height:1;letter-spacing:-.06em;max-width:96vw;white-space:nowrap;text-shadow:0 0 30px rgba(129,140,248,.28)}
+.timer-shell:fullscreen .timer-settings,.timer-shell.is-immersive .timer-settings,.timer-shell:fullscreen .timer-menu-btn,.timer-shell.is-immersive .timer-menu-btn,.timer-shell:fullscreen .timer-label,.timer-shell.is-immersive .timer-label,.timer-shell:fullscreen .timer-actions,.timer-shell:fullscreen .timer-mode,.timer-shell:fullscreen .timer-set,.timer-shell:fullscreen .timer-hint,.timer-shell:fullscreen .timer-tap-hint,.timer-shell:fullscreen .timer-menu-btn,.timer-shell.is-immersive .timer-actions,.timer-shell.is-immersive .timer-mode,.timer-shell.is-immersive .timer-set,.timer-shell.is-immersive .timer-hint,.timer-shell.is-immersive .timer-tap-hint,.timer-shell.is-immersive .timer-menu-btn{display:none!important}
+.timer-menu-btn{position:absolute;right:max(14px,env(safe-area-inset-right));top:70px;z-index:5;width:48px;height:48px;border:1px solid #64748b88;border-radius:16px;background:#ffffff18;color:#fff;font-size:1.5rem;backdrop-filter:blur(14px)}
+.timer-settings{position:absolute;z-index:6;right:max(14px,env(safe-area-inset-right));top:14px;width:min(300px,84vw);max-height:85dvh;overflow:auto;text-align:left;padding:16px;border:1px solid #ffffff28;border-radius:20px;background:#11182bea;box-shadow:0 20px 60px #0008;backdrop-filter:blur(18px)}
+.timer-settings[hidden]{display:none!important}.timer-settings h3{margin:0 0 12px}.timer-settings .timer-mode{margin-bottom:12px}.timer-settings .timer-set{justify-content:flex-start;margin:12px 0}.timer-settings .timer-actions{justify-content:flex-start}.timer-tap-hint{color:#aab5d2;font-size:.82rem}
+@media(orientation:landscape){.timer-shell:fullscreen .timer-digits,.timer-shell.is-immersive .timer-digits{font-size:clamp(3rem, min(25vw, 46vh), 13rem)}}
+@media(orientation:portrait){.timer-shell:fullscreen .timer-digits,.timer-shell.is-immersive .timer-digits{font-size:clamp(2.5rem, min(15vw, 24vh), 8rem)}}
+
+/* motivation tag */
+.qtag { display: inline-block; font-size: .74rem; font-weight: 700; padding: 3px 11px; border-radius: 99px; background: rgba(255,255,255,.22); margin-bottom: 7px; }
+.qwrap { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.qwrap:active { transform: scale(.99); }
+
+.page { animation: pageIn .35s ease; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Home profile dialog */
+.menu-dots{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:13px;padding:7px 13px;font-size:22px;line-height:1;box-shadow:var(--shadow)}
+.settings-overlay{position:fixed;inset:0;z-index:80;background:rgba(7,10,24,.58);display:grid;place-items:center;padding:18px;backdrop-filter:blur(5px)}
+.settings-dialog{width:min(100%,390px);max-height:85vh;overflow:auto;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:22px;padding:20px;box-shadow:0 20px 70px rgba(0,0,0,.28);animation:pageIn .18s ease}
+.settings-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.settings-head h2{font-size:1.15rem;margin:0}
+.settings-close{width:34px;height:34px;border:0;border-radius:10px;background:var(--chip);color:var(--text);font-size:20px}
+.settings-group{padding:13px 0;border-top:1px solid var(--border)}.settings-group h3{font-size:.93rem;margin:0 0 9px}.setting-choice{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border-radius:12px;cursor:pointer}.setting-choice:has(input:checked){background:var(--chip);font-weight:700}.setting-choice input{width:18px;height:18px;accent-color:var(--accent)}.account-note{font-size:.84rem;color:var(--muted);margin:0}
+
+
+.profile-hero{display:flex;align-items:center;gap:13px;padding:14px;border-radius:17px;background:var(--chip);margin-bottom:4px}.profile-avatar{width:52px;height:52px;display:grid;place-items:center;border-radius:16px;background:var(--card);font-size:27px}.profile-identity{min-width:0}.profile-identity h3{margin:0 0 4px;font-size:1.08rem;overflow-wrap:anywhere}.profile-identity p{margin:0;color:var(--muted);font-size:.84rem;overflow-wrap:anywhere}.profile-field{display:block;font-size:.86rem;font-weight:650;margin:10px 0;color:var(--text)}.profile-field .field{display:block;width:100%;margin-top:6px;box-sizing:border-box}.profile-primary,.profile-secondary{border:0;border-radius:12px;padding:10px 13px;font-weight:700;cursor:pointer}.profile-primary{background:var(--accent);color:#fff;width:100%;margin-top:5px}.profile-secondary{background:var(--chip);color:var(--text);border:1px solid var(--border);flex:1}.profile-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.profile-stat{padding:12px 10px;border:1px solid var(--border);border-radius:14px;background:var(--bg,var(--card));min-width:0}.profile-stat strong{display:block;font-size:1.2rem;margin-bottom:4px}.profile-stat span{display:block;font-size:.76rem;color:var(--muted)}.profile-pref-title{font-size:.82rem;font-weight:700;margin:12px 0 4px}.profile-data-actions{display:flex;gap:8px;margin:12px 0 8px}.profile-data-actions button{font-size:.82rem}
+
+
+/* Login styles removed: Minrol opens directly on the tracker home screen. */
+
+
+</style>
+</head>
+<body class="minrol-app">
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">📚</div>
+      <div><b class="display">Minrol</b><small>Focus &amp; Time Tracker</small></div>
+    </div>
+    <button class="menu-dots" data-act="settings-menu" aria-label="Profile" title="Profile">👤</button>
+  </header>
+
+  <main>
+    <section id="page-home" class="page"></section>
+    <section id="page-chapters" class="page" hidden></section>
+    <section id="page-goals" class="page" hidden></section>
+    <section id="page-events" class="page" hidden></section>
+    <section id="page-stopwatch" class="page" hidden></section>
+  </main>
+</div>
+
+<nav class="nav" aria-label="প্রধান মেনু">
+  <button data-act="nav" data-page="home" aria-current="page"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span>হোম</button>
+  <button data-act="nav" data-page="chapters"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18V5a2 2 0 0 1 2-2h4a3 3 0 0 1 3 3 3 3 0 0 1 3-3h4a2 2 0 0 1 2 2v13a1 1 0 0 1-1 1h-5a3 3 0 0 0-3 2 3 3 0 0 0-3-2H4a1 1 0 0 1-1-1Z"/></svg></span>চ্যাপ্টার</button>
+  <button data-act="nav" data-page="goals"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5"/><path d="M4 5c5-4 9 4 16 0v11c-7 4-11-4-16 0"/></svg></span>লক্ষ্য</button>
+  <button data-act="nav" data-page="events"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m8 15 2.5 2.5L16 12"/></svg></span>ইভেন্ট</button>
+  <button data-act="nav" data-page="stopwatch"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M9 2h6M12 2v3M19 6l1.5-1.5"/></svg></span>Clock</button>
+</nav>
+
+<div class="settings-overlay" id="settingsOverlay" hidden>
+  <section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="settings-head"><h2 id="settingsTitle">👤 Profile</h2><button class="settings-close" data-act="settings-close" aria-label="Close">×</button></div>
+    <div class="profile-hero">
+      <div class="profile-avatar" aria-hidden="true">🎓</div>
+      <div class="profile-identity"><h3 id="profileDisplayName">Student</h3><p id="profileDisplayDream">Your study journey</p></div>
+    </div>
+    <div class="settings-group"><h3>Profile details</h3>
+      <label class="profile-field">Name<input id="profileNameInput" class="field" maxlength="30" placeholder="Your name" autocomplete="name"></label>
+      <label class="profile-field">Study goal<input id="profileDreamInput" class="field" maxlength="80" placeholder="e.g. Get into EEE"></label>
+      <button class="profile-primary" data-act="profile-save">Save profile</button>
+    </div>
+    <div class="settings-group"><h3>📊 Live statistics</h3>
+      <div class="profile-stats">
+        <div class="profile-stat"><strong id="profileChapterDone">0/0</strong><span>Chapters completed</span></div>
+        <div class="profile-stat"><strong id="profileStreak">0</strong><span>Day streak</span></div>
+        <div class="profile-stat"><strong id="profileGoals">0/0</strong><span>Goals completed</span></div>
+        <div class="profile-stat"><strong id="profileCheckins">0</strong><span>Study check-ins</span></div>
+      </div>
+      <p class="account-note">Statistics update from your tracker data. Study time is not recorded by this version.</p>
+    </div>
+    <div class="settings-group"><h3>⚙️ Preferences</h3>
+      <p class="profile-pref-title">Language</p>
+      <label class="setting-choice">English <input type="radio" name="appLanguage" value="en"></label>
+      <label class="setting-choice">Bangla <input type="radio" name="appLanguage" value="bn"></label>
+      <p class="profile-pref-title">Appearance</p>
+      <label class="setting-choice">Dark <input type="radio" name="appMood" value="dark"></label>
+      <label class="setting-choice">Light <input type="radio" name="appMood" value="light"></label>
+      <label class="setting-choice">Device default <input type="radio" name="appMood" value="device"></label>
+    </div>
+    <div class="settings-group"><h3>💾 Data &amp; Privacy</h3>
+      <p class="account-note">Your tracker data is stored on this device unless app sync is configured.</p>
+      <div class="profile-data-actions"><button class="profile-secondary" data-act="profile-export">Export backup</button><button class="profile-secondary" data-act="profile-import-pick">Restore backup</button><input id="profileImportFile" type="file" accept="application/json,.json" hidden></div>
+      <p class="account-note" id="profileBackupStatus" aria-live="polite"></p>
+    </div>
+  </section>
+</div>
+
+<canvas id="confetti"></canvas>
+<div class="toast" id="toast" role="status"></div>
+
+<div class="modal" id="modal" hidden>
+  <div class="mcard" role="dialog" aria-modal="true">
+    <h3 id="mTitle"></h3>
+    <input class="field" id="mInput" type="text" autocomplete="off">
+    <p id="mMsg" class="muted" style="margin:0"></p>
+    <div class="row">
+      <button class="btn ghost" id="mCancel">বাতিল</button>
+      <button class="btn" id="mOk">ঠিক আছে</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="eventAddModal" hidden>
+  <div class="mcard event-dialog" role="dialog" aria-modal="true" aria-labelledby="eventDialogTitle">
+    <div class="event-dialog-head"><h3 id="eventDialogTitle">📅 নতুন ইভেন্ট যোগ করো</h3><button type="button" class="event-dialog-close" data-act="ev-close" aria-label="বন্ধ করো">×</button></div>
+    <label class="event-label" for="eTitle">ইভেন্টের নাম</label>
+    <input class="field" id="eTitle" type="text" placeholder="যেমন: পদার্থবিজ্ঞান ক্লাস টেস্ট" autocomplete="off">
+    <div class="event-field-grid">
+      <div><label class="event-label" for="eDate">তারিখ</label><input class="field" id="eDate" type="date"></div>
+      <div><label class="event-label" for="eTime">সময় (ঐচ্ছিক)</label><input class="field" id="eTime" type="time"></div>
+    </div>
+    <label class="event-label" for="eType">ইভেন্টের ধরন</label>
+    <select class="field" id="eType"></select>
+    <div class="event-dialog-actions"><button class="btn ghost" data-act="ev-close">বাতিল</button><button class="btn" data-act="ev-add">Add Event ➕</button></div>
+  </div>
+</div>
+
+<div class="modal" id="goalAddModal" hidden>
+  <div class="mcard event-dialog goal-dialog" role="dialog" aria-modal="true" aria-labelledby="goalDialogTitle">
+    <div class="event-dialog-head"><h3 id="goalDialogTitle">🎯 নতুন লক্ষ্য</h3><button type="button" class="event-dialog-close" data-act="goal-close" aria-label="বন্ধ করো">×</button></div>
+    <label class="event-label" for="gTitle">লক্ষ্যের নাম</label>
+    <input class="field" id="gTitle" type="text" placeholder="যেমন: পদার্থবিজ্ঞান ১ম পত্র শেষ করব" autocomplete="off">
+    <div class="event-field-grid">
+      <div><label class="event-label" for="gDate">শেষ তারিখ</label><input class="field" id="gDate" type="date"></div>
+      <div><label class="event-label" for="gLink">বইয়ের সাথে যুক্ত করো</label><select class="field" id="gLink"></select></div>
+    </div>
+    <div class="event-dialog-actions"><button class="btn ghost" data-act="goal-close">বাতিল</button><button class="btn" data-act="goal-add">Add Goal ➕</button></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ================= helpers ================= */
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var DIG = "০১২৩৪৫৬৭৮৯";
+  function bn(n) { var str = String(n); return (document.documentElement.lang === "en") ? str : str.replace(/\d/g, function (d) { return DIG[d]; }); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function dstr(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function today() { return dstr(new Date()); }
+  function parseD(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function daysBetween(a, b) { return Math.round((parseD(b) - parseD(a)) / 86400000); }
+  var MONTHS = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
+  var WD = ["রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"];
+  var WDS_BN = ["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহ", "শুক্র", "শনি"];
+  var WDS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  function weekDayShort(day) { return (document.documentElement.lang === "en" ? WDS_EN : WDS_BN)[day]; }
+  function fmtBn(s) {
+    var d = parseD(s);
+    if (document.documentElement.lang === "en") {
+      var em = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      var ew = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      return d.getDate() + " " + em[d.getMonth()] + " " + d.getFullYear() + ", " + ew[d.getDay()];
+    }
+    return bn(d.getDate()) + " " + MONTHS[d.getMonth()] + " " + bn(d.getFullYear()) + ", " + WD[d.getDay()];
+  }
+  function countdown(s) {
+    var n = daysBetween(today(), s);
+    if (document.documentElement.lang === "en") {
+      if (n > 1) return "In " + n + " days";
+      if (n === 1) return "Tomorrow";
+      if (n === 0) return "Today!";
+      return Math.abs(n) + " days ago";
+    }
+    if (n > 1) return "আর " + bn(n) + " দিন";
+    if (n === 1) return "আগামীকাল";
+    if (n === 0) return "আজ!";
+    return bn(-n) + " দিন আগে";
+  }
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ================= syllabus (editable in-app) ================= */
+  var SYL = [
+    { id: "math", name: "উচ্চতর গণিত", en: "Higher Math", icon: "📐", color: "#12a8c9", papers: [
+      { id: "p1", name: "১ম পত্র", ch: ["ম্যাট্রিক্স ও নির্ণায়ক", "ভেক্টর", "সরলরেখা", "বৃত্ত", "বিন্যাস ও সমাবেশ", "ত্রিকোণমিতিক অনুপাত", "সংযুক্ত ও যৌগিক কোণের ত্রিকোণমিতিক অনুপাত", "ফাংশন ও ফাংশনের লেখচিত্র", "অন্তরীকরণ", "যোগজীকরণ"] },
+      { id: "p2", name: "২য় পত্র", ch: ["বাস্তব সংখ্যা ও অসমতা", "যোগাশ্রয়ী প্রোগ্রাম", "জটিল সংখ্যা", "বহুপদী ও বহুপদী সমীকরণ", "দ্বিপদী বিস্তৃতি", "কণিক", "বিপরীত ত্রিকোণমিতিক ফাংশন ও ত্রিকোণমিতিক সমীকরণ", "স্থিতিবিদ্যা", "সমতলে বস্তুকণার গতি", "বিস্তার পরিমাপ ও সম্ভাবনা"] }
+    ] },
+    { id: "phy", name: "পদার্থবিজ্ঞান", en: "Physics", icon: "⚛️", color: "#5b6cff", papers: [
+      { id: "p1", name: "১ম পত্র", ch: ["ভৌত জগৎ ও পরিমাপ", "ভেক্টর", "গতিবিদ্যা", "নিউটনীয় বলবিদ্যা", "কাজ, শক্তি ও ক্ষমতা", "মহাকর্ষ ও অভিকর্ষ", "পদার্থের গাঠনিক ধর্ম", "পর্যাবৃত্ত গতি", "তরঙ্গ", "আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব"] },
+      { id: "p2", name: "২য় পত্র", ch: ["তাপগতিবিদ্যা", "স্থির তড়িৎ", "চল তড়িৎ", "তড়িৎ প্রবাহের চৌম্বক ক্রিয়া ও চুম্বকত্ব", "তাড়িতচৌম্বকীয় আবেশ ও পরিবর্তী প্রবাহ", "জ্যামিতিক আলোকবিজ্ঞান", "ভৌত আলোকবিজ্ঞান", "আধুনিক পদার্থবিজ্ঞানের সূচনা", "পরমাণুর মডেল ও নিউক্লিয়ার পদার্থবিজ্ঞান", "সেমিকন্ডাক্টর ও ইলেকট্রনিক্স", "জ্যোতির্বিজ্ঞান"] }
+    ] },
+    { id: "chem", name: "রসায়ন", en: "Chemistry", icon: "🧪", color: "#f08a3c", papers: [
+      { id: "p1", name: "১ম পত্র", ch: ["ল্যাবরেটরির নিরাপদ ব্যবহার", "গুণগত রসায়ন", "মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন", "রাসায়নিক পরিবর্তন", "কর্মমুখী রসায়ন"] },
+      { id: "p2", name: "২য় পত্র", ch: ["পরিবেশ রসায়ন", "জৈব রসায়ন", "পরিমাণগত রসায়ন", "তড়িৎ রসায়ন", "অর্থনৈতিক রসায়ন"] }
+    ] },
+    { id: "bio", name: "জীববিজ্ঞান", en: "Biology", icon: "🧬", color: "#e5487f", papers: [
+      { id: "p1", name: "১ম পত্র", ch: ["কোষ ও এর গঠন", "কোষ বিভাজন", "কোষ রসায়ন", "অণুজীব", "শৈবাল ও ছত্রাক", "ব্রায়োফাইটা ও টেরিডোফাইটা", "নগ্নবীজী ও আবৃতবীজী উদ্ভিদ", "টিস্যু ও টিস্যুতন্ত্র", "উদ্ভিদ শারীরতত্ত্ব", "উদ্ভিদ প্রজনন", "জীবপ্রযুক্তি", "জীবের পরিবেশ, বিস্তার ও সংরক্ষণ"] },
+      { id: "p2", name: "২য় পত্র", ch: ["প্রাণীর বিভিন্নতা ও শ্রেণিবিন্যাস", "প্রাণীর পরিচিতি", "পরিপাক ও শোষণ", "রক্ত ও সঞ্চালন", "গ্যাসীয় বিনিময়", "বর্জ্য ও নিষ্কাশন", "চলন ও অঙ্গচালনা", "সমন্বয়", "মানব জীবনের ধারাবাহিকতা", "মানবদেহের প্রতিরক্ষা", "জিনতত্ত্ব ও বিবর্তন", "প্রাণীর আচরণ"] }
+    ] },
+
+  ];
+  function bookById(id) { for (var i = 0; i < SYL.length; i++) if (SYL[i].id === id) return SYL[i]; return SYL[0]; }
+  function paperName(b, p) { return bookById(b).papers.filter(function (x) { return x.id === p; })[0].name; }
+
+  /* ================= quotes ================= */
+  var QUOTES = [
+    ["আজকের এক ঘণ্টার পড়া, আগামীকালের আত্মবিশ্বাস।", "Study now, shine later.", "📚", "পড়া"],
+    ["ছোট ছোট অধ্যায় শেষ করতে করতেই বড় স্বপ্ন সত্যি হয়।", "One chapter at a time. One day at a time.", "🌱", "ধাপে ধাপে"],
+    ["কঠিন লাগছে? তার মানে তুমি নতুন কিছু শিখছ।", "If it feels hard, you're growing.", "💪", "সাহস"],
+    ["প্রতিদিন একটু একটু এগোলে পাহাড়ও পার হওয়া যায়।", "Small steps every day beat big plans someday.", "⛰️", "ধারাবাহিকতা"],
+    ["ফলাফল আসে একদিনে, কিন্তু তৈরি হয় প্রতিদিনের অভ্যাসে।", "Results arrive in a day. Habits build them every day.", "⏳", "অভ্যাস"],
+    ["আজ যেটা পারছ না, কাল সেটাই পারবে। শুধু থেমো না।", "Not yet is not never. Keep going.", "🚀", "এগিয়ে চলো"],
+    ["ভুল মানে হেরে যাওয়া নয়, ভুল মানে শেখার সুযোগ।", "Mistakes are proof that you're trying.", "💡", "শেখা"],
+    ["পড়ার টেবিলে যত ঘাম ঝরাবে, পরীক্ষার হলে তত কম কাঁপবে।", "Sweat in practice, stay calm in the exam.", "📝", "প্রস্তুতি"],
+    ["ম্যাথ কঠিন নয়, শুধু অভ্যাসের অভাব। একটা অঙ্ক, তারপর আরেকটা।", "One problem at a time. That's how math is beaten.", "📐", "ম্যাথ"],
+    ["নিখুঁত হওয়ার দরকার নেই, শুধু প্রতিদিন হাজির থাকো।", "You don't have to be perfect. Just show up.", "🎯", "মনোযোগ"],
+    ["তোমার ভবিষ্যৎ-তুমি দেখছে। তাকে গর্বিত করো।", "Your future self is watching. Make them proud.", "🌟", "স্বপ্ন"],
+    ["সবুজ হতে থাকুক তোমার চ্যাপ্টারগুলো, একটা একটা করে।", "Turn every chapter green.", "✅", "চ্যাপ্টার"],
+    ["মন না চাইলেও ১০ মিনিট শুরু করো—গতি নিজেই আসবে।", "Start with ten minutes; momentum will follow.", "⏱️", "শুরু"],
+    ["আজকের মনোযোগই আগামী দিনের সুযোগ তৈরি করে।", "Today's focus creates tomorrow's opportunities.", "🔎", "মনোযোগ"],
+    ["একটা ভুল থেকে শেখা, দশটা উত্তর মুখস্থ করার চেয়েও দামি।", "Learn from one mistake; grow beyond memorizing.", "🧠", "শেখা"],
+    ["তুলনা করো গতকালের নিজের সঙ্গে, অন্য কারও সঙ্গে নয়।", "Compete with who you were yesterday.", "🌿", "উন্নতি"],
+    ["বিরতি নাও, শ্বাস নাও, তারপর আবার শুরু করো।", "Pause, breathe, and begin again.", "🌤️", "ভারসাম্য"],
+    ["প্রতিটি অনুশীলন তোমাকে লক্ষ্যের একটু কাছে আনে।", "Every practice session moves you closer.", "🧩", "অনুশীলন"],
+    ["কঠিন প্রশ্নে আটকে গেলে, ধাপে ধাপে ভেঙে দেখো।", "Break hard questions into smaller steps.", "🪜", "সমাধান"],
+    ["নিয়মিত চেষ্টা প্রতিভাকেও ছাড়িয়ে যেতে পারে।", "Consistent effort can take you far.", "🔥", "চেষ্টা"],
+    ["আজকের কাজ আজই শেষ করার ছোট অভ্যাস গড়ো।", "Build the habit of finishing today's work today.", "📅", "অভ্যাস"],
+    ["তোমার স্বপ্ন বড় হলে, আজকের ছোট কাজও গুরুত্বপূর্ণ।", "Big dreams are built from small actions.", "✨", "লক্ষ্য"],
+    ["নিজের গতিতে এগিয়ে চলো—থেমে না যাওয়াটাই আসল।", "Move at your own pace; keep showing up.", "🚶", "ধারাবাহিকতা"]
+  ];
+  var TICK = ["চালিয়ে যাও 💪", "Keep going 🚀", "তুমি পারবে ✨", "You've got this 🔥", "মনোযোগ 🎯", "Stay focused 📖", "হাল ছেড়ো না 🌟", "Never give up 🏆"];
+
+  /* ================= state + persistence ================= */
+  var LS = "minrol-study-tracker-v1";
+  var state;
+  var eventScrollTimer = null, goalScrollTimer = null;
+
+  function defaultState() {
+    var syl = {};
+    SYL.forEach(function (b) {
+      syl[b.id] = {};
+      b.papers.forEach(function (p) {
+        syl[b.id][p.id] = p.ch.map(function (n, i) { return { id: b.id + "-" + p.id + "-" + (i + 1), n: n }; });
+      });
+    });
+    return { v: 1, updatedAt: 0, name: "সোহান", dream: "", syl: syl, done: {}, doing: {}, chapterProgress: {}, goals: [], events: [], days: [], weekly: 3 };
+  }
+  function normalize(s) {
+    var d = defaultState();
+    if (!s || typeof s !== "object") return d;
+    Object.keys(d).forEach(function (k) { if (s[k] === undefined || s[k] === null) s[k] = d[k]; });
+    SYL.forEach(function (b) {
+      if (!s.syl[b.id]) s.syl[b.id] = d.syl[b.id];
+      b.papers.forEach(function (p) { if (!Array.isArray(s.syl[b.id][p.id])) s.syl[b.id][p.id] = d.syl[b.id][p.id]; });
+    });
+    if (!s.chapterProgress || typeof s.chapterProgress !== "object") s.chapterProgress = {};
+    // Existing chapters marked complete remain fully complete after this update.
+    Object.keys(s.done || {}).forEach(function (id) { if (!s.chapterProgress[id]) s.chapterProgress[id] = { mcq: true, cq: true }; });
+    if (s.name === "শোহান") s.name = "সোহান";
+    if (typeof s.updatedAt !== "number") s.updatedAt = 0;
+    return s;
+  }
+  function loadLocal() {
+    try { var t = localStorage.getItem(LS); return t ? JSON.parse(t) : null; } catch (e) { return null; }
+  }
+  function saveLocal() { try { localStorage.setItem(LS, JSON.stringify(state)); } catch (e) {} }
+  state = normalize(loadLocal());
+
+  var dbDoc = null, saving = false, pending = false, saveTimer = null;
+  function changed() {
+    state.updatedAt = Date.now();
+    saveLocal();
+    if (dbDoc) { clearTimeout(saveTimer); saveTimer = setTimeout(flushDb, 700); }
+  }
+  function flushDb() {
+    if (!dbDoc) return;
+    if (saving) { pending = true; return; }
+    saving = true;
+    var body = JSON.parse(JSON.stringify(state));
+    dbDoc.set(body).then(function () { saving = false; if (pending) { pending = false; flushDb(); } },
+                         function () { saving = false; pending = false; });
+  }
+  function initDb() {
+    try {
+      if (!window.claude || !window.claude.use) return;
+      Promise.all([window.claude.use("db"), window.claude.use("user")]).then(function (r) {
+        var db = r[0], user = r[1];
+        if (!db || !user) return null;
+        return user.id().then(function (id) {
+          if (!id) return null;
+          var ref = db.doc("data/users/" + id + "/tracker");
+          return ref.get().then(function (snap) {
+            if (snap.exists) {
+              var remote = JSON.parse(JSON.stringify(snap.data()));
+              if (!state.updatedAt || (remote.updatedAt || 0) > state.updatedAt) {
+                state = normalize(remote);
+                saveLocal();
+                dbDoc = ref;
+                renderAll(false);
+                return;
+              }
+            }
+            dbDoc = ref;
+            if (state.updatedAt) flushDb();
+          });
+        });
+      }).catch(function () {});
+    } catch (e) {}
+  }
+
+  /* ================= derived data ================= */
+  function chaptersOf(b, p) { return state.syl[b][p]; }
+  function chapterPct(id) {
+    var p = state.chapterProgress[id] || { mcq: !!state.done[id], cq: !!state.done[id] };
+    return (p.mcq ? 60 : 0) + (p.cq ? 40 : 0);
+  }
+  function paperStats(b, p) {
+    var list = chaptersOf(b, p), n = 0, points = 0;
+    list.forEach(function (c) { var pct = chapterPct(c.id); points += pct; if (pct === 100) n++; });
+    return { done: n, total: list.length, pct: list.length ? Math.round(points / list.length) : 0 };
+  }
+  function bookStats(b) {
+    var d = 0, t = 0, points = 0;
+    bookById(b).papers.forEach(function (p) { var s = paperStats(b, p.id); d += s.done; t += s.total; points += s.pct * s.total; });
+    return { done: d, total: t, pct: t ? Math.round(points / t) : 0 };
+  }
+  function allStats() {
+    var d = 0, t = 0, points = 0;
+    SYL.forEach(function (b) { var s = bookStats(b.id); d += s.done; t += s.total; points += s.pct * s.total; });
+    return { done: d, total: t, pct: t ? Math.round(points / t) : 0 };
+  }
+  function nextChapter() {
+    var first = null, i, j, k;
+    for (i = 0; i < SYL.length; i++) for (j = 0; j < SYL[i].papers.length; j++) {
+      var list = chaptersOf(SYL[i].id, SYL[i].papers[j].id);
+      for (k = 0; k < list.length; k++) {
+        var c = list[k];
+        if (state.done[c.id]) continue;
+        var o = { b: SYL[i].id, p: SYL[i].papers[j].id, c: c, no: k + 1 };
+        if (state.doing[c.id]) return o;
+        if (!first) first = o;
+      }
+    }
+    return first;
+  }
+  function weekStart() {
+    var d = new Date();
+    var back = (d.getDay() + 1) % 7; // week starts Saturday
+    d.setDate(d.getDate() - back);
+    return dstr(d);
+  }
+  function weekCount() {
+    var ws = weekStart(), n = 0;
+    Object.keys(state.done).forEach(function (k) { if (state.done[k] >= ws) n++; });
+    return n;
+  }
+  function streak() {
+    var set = {};
+    state.days.forEach(function (d) { set[d] = 1; });
+    var d = new Date(), n = 0;
+    if (!set[dstr(d)]) d.setDate(d.getDate() - 1);
+    while (set[dstr(d)]) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  function nextEvent() {
+    var t = today(), best = null;
+    state.events.forEach(function (e) {
+      if (e.done || e.date < t) return;
+      if (!best || e.date < best.date || (e.date === best.date && (e.time || "") < (best.time || ""))) best = e;
+    });
+    return best;
+  }
+  var ETYPE = { exam: ["📝", "পরীক্ষা"], test: ["✏️", "ক্লাস টেস্ট"], task: ["📚", "অ্যাসাইনমেন্ট"], other: ["🎯", "অন্যান্য"] };
+
+  /* ================= UI state ================= */
+  var ui = { page: "home", book: "math", paper: "p1", edit: false, justDone: null, selectedChapter: null, timerMode: "stopwatch", timerMenuOpen: false, clockView: "stopwatch", paperDirection: null, clockDirection: null };
+  var timer = { running: false, startAt: 0, elapsed: 0, interval: null, target: 0, wakeLock: null };
+  var countdownTimer = { running: false, startAt: 0, startRemaining: 0, duration: 0, remaining: 0, interval: null, wakeLock: null };
+  function timerElapsed() { return timer.elapsed + (timer.running ? performance.now() - timer.startAt : 0); }
+  function formatClock(ms) {
+    var total = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(total / 3600), m = Math.floor((total % 3600) / 60), sec = total % 60;
+    return pad(h) + ":" + pad(m) + ":" + pad(sec);
+  }
+  function requestWakeLock() {
+    if (navigator.wakeLock && timer.running) navigator.wakeLock.request("screen").then(function (lock) { timer.wakeLock = lock; lock.addEventListener("release", function () { timer.wakeLock = null; }); }).catch(function () {});
+  }
+  function releaseWakeLock() { if (timer.wakeLock) { timer.wakeLock.release().catch(function () {}); timer.wakeLock = null; } }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && timer.running) requestWakeLock(); if (!document.hidden && countdownTimer.running) requestCountdownWakeLock(); });
+
+  /* ================= motivation (22 quotes x 8s = 176s cycle) ================= */
+  var MOT_MS = 8000;
+  var MOT = { i: 0, el: 0, last: performance.now() };
+  (function () {
+    var d = new Date();
+    var doy = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+    MOT.i = doy % QUOTES.length;
+  })();
+  function qHtml(q) {
+    return '<span class="qtag">' + q[2] + " " + esc(q[3]) + '</span><p class="qbn display">' + esc(q[0]) + '</p><p class="qen">' + esc(q[1]) + "</p>";
+  }
+  function paintHero() {
+    var w = $("#qwrap");
+    if (!w) return;
+    w.classList.add("out");
+    setTimeout(function () {
+      var w2 = $("#qwrap");
+      if (!w2) return;
+      w2.innerHTML = qHtml(QUOTES[MOT.i]);
+      w2.classList.remove("out");
+    }, 240);
+  }
+  function motGo(n) {
+    var L = QUOTES.length;
+    MOT.i = ((n % L) + L) % L;
+    MOT.el = 0; MOT.last = performance.now();
+    paintHero();
+  }
+  setInterval(function () {
+    var now = performance.now(), dt = now - MOT.last;
+    MOT.last = now;
+    if (document.hidden || ui.page !== "home" || !$("#qwrap") || dt > 1000) return;
+    MOT.el += dt;
+    if (MOT.el >= MOT_MS) motGo(MOT.i + 1);
+  }, 100);
+
+  /* ================= toast, confetti, modal ================= */
+  var toastT = null;
+  function toast(msg) {
+    var t = $("#toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { t.classList.remove("show"); }, 2300);
+  }
+
+  var cf = $("#confetti"), cctx = cf.getContext("2d"), parts = [], crun = false;
+  function cResize() { cf.width = window.innerWidth; cf.height = window.innerHeight; }
+  function confetti(x, y, n) {
+    if (reduced) return;
+    cResize();
+    var cols = ["#22c55e", "#facc15", "#60a5fa", "#f472b6", "#fb923c", "#a78bfa"];
+    for (var i = 0; i < n; i++) {
+      var a = Math.random() * Math.PI * 2, sp = 3 + Math.random() * 7;
+      parts.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 5, s: 5 + Math.random() * 6,
+        c: cols[(Math.random() * cols.length) | 0], r: Math.random() * 6, vr: (Math.random() - .5) * .4, life: 70 + Math.random() * 40 });
+    }
+    if (!crun) { crun = true; requestAnimationFrame(ctick); }
+  }
+  function ctick() {
+    cctx.clearRect(0, 0, cf.width, cf.height);
+    parts = parts.filter(function (p) { return p.life > 0 && p.y < cf.height + 20; });
+    parts.forEach(function (p) {
+      p.vy += 0.28; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life--;
+      cctx.save(); cctx.translate(p.x, p.y); cctx.rotate(p.r);
+      cctx.globalAlpha = Math.min(1, p.life / 25);
+      cctx.fillStyle = p.c; cctx.fillRect(-p.s / 2, -p.s / 3, p.s, p.s * 0.6);
+      cctx.restore();
+    });
+    if (parts.length) requestAnimationFrame(ctick);
+    else { crun = false; cctx.clearRect(0, 0, cf.width, cf.height); }
+  }
+
+  var modalRes = null;
+  function openModal(title, opts) {
+    return new Promise(function (res) {
+      modalRes = res;
+      $("#mTitle").textContent = title;
+      var inp = $("#mInput");
+      inp.hidden = !opts.input;
+      inp.value = opts.value || "";
+      inp.placeholder = opts.placeholder || "";
+      $("#mMsg").textContent = opts.msg || "";
+      $("#mMsg").hidden = !opts.msg;
+      $("#mOk").textContent = opts.ok || "ঠিক আছে";
+      $("#mOk").className = "btn" + (opts.danger ? " danger" : "");
+      $("#modal").hidden = false;
+      if (opts.input) setTimeout(function () { inp.focus(); inp.select(); }, 30);
+    });
+  }
+  function closeModal(val) {
+    $("#modal").hidden = true;
+    var r = modalRes; modalRes = null;
+    if (r) r(val);
+  }
+  function askText(title, value, ph) { return openModal(title, { input: true, value: value, placeholder: ph }); }
+  function askConfirm(msg, ok) { return openModal(msg, { input: false, ok: ok || "হ্যাঁ", danger: true }).then(function (v) { return v !== null; }); }
+  $("#mOk").addEventListener("click", function () { closeModal($("#mInput").hidden ? true : $("#mInput").value.trim()); });
+  $("#mCancel").addEventListener("click", function () { closeModal(null); });
+  $("#modal").addEventListener("click", function (e) { if (e.target === this) closeModal(null); });
+  $("#mInput").addEventListener("keydown", function (e) { if (e.key === "Enter") $("#mOk").click(); if (e.key === "Escape") closeModal(null); });
+
+  /* ================= renderers ================= */
+  function greeting() {
+    var h = new Date().getHours();
+    if (h < 4) return "শুভ রাত্রি 🌌";
+    if (h < 12) return "শুভ সকাল ☀️";
+    if (h < 16) return "শুভ দুপুর 🌤️";
+    if (h < 18) return "শুভ বিকাল 🌇";
+    return "শুভ সন্ধ্যা 🌙";
+  }
+
+  function renderHome(animate) {
+    var st = allStats(), q = QUOTES[MOT.i], sk = streak(), t = today();
+    var checked = state.days.indexOf(t) >= 0;
+    var wc = weekCount(), wt = state.weekly, wp = Math.min(100, Math.round(wc * 100 / Math.max(1, wt)));
+    var ne = nextEvent(), nx = nextChapter();
+    var C = 2 * Math.PI * 52, dots = "", i, floats = "";
+    var em = ["🚀", "⭐", "📚", "✨", "🔥", "💡", "🎯"];
+    for (i = 0; i < 7; i++) {
+      floats += '<span class="floaty" style="left:' + (6 + i * 14) + '%;animation-delay:' + (i * 1.3) + 's;animation-duration:' + (8 + (i % 3) * 2) + 's">' + em[i] + "</span>";
+    }
+    for (i = 6; i >= 0; i--) {
+      var d = new Date(); d.setDate(d.getDate() - i);
+      var ds = dstr(d), on = state.days.indexOf(ds) >= 0;
+      dots += '<div class="dot' + (on ? " on" : "") + (i === 0 ? " now" : "") + '"><i></i>' + weekDayShort(d.getDay()) + "</div>";
+    }
+    var tk = TICK.concat(TICK).map(function (x) { return "<span>" + x + "</span>"; }).join("");
+
+    var subj = SYL.map(function (b) {
+      var s = bookStats(b.id);
+      return '<button class="subj" data-act="goto-book" data-book="' + b.id + '"><div class="l"><span>' + b.icon + " " + b.name +
+        '</span><span class="muted">' + bn(s.done) + "/" + bn(s.total) + " · " + bn(s.pct) + '%</span></div><div class="bar' + (s.pct === 100 ? " green" : "") +
+        '" style="--c:' + b.color + '"><i data-w="' + s.pct + '"></i></div></button>';
+    }).join("");
+
+    var upcoming = state.events.filter(function (e) { return !e.done && e.date >= t; }).sort(function (a,b) { return (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")); }).slice(0, 12);
+    function eventCard(e) {
+      var ty = ETYPE[e.type || "other"];
+      return '<div class="event-card"><div class="event-icon">' + ty[0] + '</div><div class="event-title">' + esc(e.title) + '</div><div class="event-date">📅 ' + fmtBn(e.date) + '</div><div class="event-count">' + countdown(e.date) + '</div></div>';
+    }
+    var evCards = upcoming.length ? '<div class="event-stage" aria-label="পরের ইভেন্টসমূহ"><div class="event-track">' + upcoming.map(eventCard).join("") + '</div></div>' : '<div class="empty">📅 কোনো আসন্ন ইভেন্ট নেই। ইভেন্ট ট্যাবে যোগ করো।</div>';
+    var activeGoals = state.goals.filter(function(g){ return !g.done; }).slice(0,12);
+    function goalCard(g) {
+      var pct = 0;
+      if (g.link) { var gl = g.link.split(':'); if (state.syl[gl[0]] && state.syl[gl[0]][gl[1]]) pct = paperStats(gl[0],gl[1]).pct; }
+      var due = g.date ? '<div class="goal-card-date">📅 ' + fmtBn(g.date) + '</div><div class="goal-card-count">' + countdown(g.date) + '</div>' : '<div class="goal-card-date">🎯 ' + (document.documentElement.lang === 'en' ? 'No due date' : 'শেষ তারিখ নেই') + '</div>';
+      return '<div class="goal-card"><div class="event-icon">🎯</div><div class="goal-card-title">' + esc(g.title) + '</div>' + due + (g.link ? '<div class="goal-card-progress"><i style="width:' + pct + '%"></i></div><div class="goal-card-date">' + (document.documentElement.lang === 'en' ? 'Progress' : 'অগ্রগতি') + ': ' + bn(pct) + '%</div>' : '') + '</div>';
+    }
+    var goalCards = activeGoals.length ? '<div class="event-stage goal-stage" aria-label="আমার লক্ষ্যসমূহ"><div class="event-track">' + activeGoals.map(goalCard).join('') + '</div></div>' : '<div class="empty">🎯 এখনো কোনো লক্ষ্য নেই। লক্ষ্য ট্যাবে যোগ করো।</div>';
+
+    $("#page-home").innerHTML =
+      '<div class="hero">' + floats +
+      '<p class="greet">' + greeting() + ", <span>" + esc(state.name) + "</span>!</p>" +
+      '<div class="qwrap" id="qwrap" role="button" tabindex="0" aria-label="পরের মোটিভেশন দেখতে ট্যাপ করো" title="পরের মোটিভেশন দেখতে ট্যাপ করো">' + qHtml(q) + "</div>" +
+      '<div class="dream">🎯 আমার স্বপ্ন: <b>' + (state.dream ? esc(state.dream) : "প্রোফাইলে গিয়ে তোমার স্বপ্ন লেখো") + "</b></div></div>" +
+      '<div class="ticker" aria-hidden="true"><div class="track">' + tk + "</div></div>" +
+      '<div class="grid2">' +
+      '<div class="card"><h3>মোট অগ্রগতি</h3><div class="ringbox"><div class="ring"><svg width="116" height="116" viewBox="0 0 116 116">' +
+      '<defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b5bf0"/><stop offset="1" stop-color="#22c55e"/></linearGradient></defs>' +
+      '<circle class="bg" cx="58" cy="58" r="52" fill="none" stroke-width="11"/>' +
+      '<circle class="fg" id="ringfg" cx="58" cy="58" r="52" fill="none" stroke-width="11" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + C.toFixed(1) + '" data-c="' + C.toFixed(1) + '" data-p="' + st.pct + '"/></svg>' +
+      '<div class="num"><span><span id="pctnum" data-to="' + st.pct + '">' + bn(st.pct) + '</span><small>%</small></span></div></div>' +
+      '<div><div class="big">' + bn(st.done) + '<span class="muted" style="font-size:1rem">/' + bn(st.total) + '</span></div><div class="muted">চ্যাপ্টার শেষ</div></div></div></div>' +
+      '<div class="card"><h3>স্ট্রিক <span class="flame">🔥</span></h3><div class="big">' + bn(sk) + ' <span class="muted" style="font-size:1rem">দিন</span></div>' +
+      '<div class="dots">' + dots + "</div>" +
+      (checked ? '<button class="btn ok" data-act="checkin">✅ আজকের পড়া শেষ</button>' : '<button class="btn pulse" data-act="checkin">আজ পড়েছি, চেক-ইন!</button>') +
+      "</div></div>" +
+      '<div class="sec card event-feature"><h3>📅 পরের ইভেন্ট</h3>' + evCards + '<button class="btn ghost" data-act="nav" data-page="events">সব ইভেন্ট দেখো</button></div>' +
+      '<div class="sec card goal-feature"><h3>🎯 আমার লক্ষ্য</h3>' + goalCards + '<button class="btn ghost" data-act="nav" data-page="goals">সব লক্ষ্য দেখো</button></div>' +
+      '<div class="sec card"><h3>বিষয়ভিত্তিক অগ্রগতি</h3>' + subj + "</div>";
+
+    if (eventScrollTimer) { clearInterval(eventScrollTimer); eventScrollTimer = null; }
+    var eventStage = document.querySelector("#page-home .event-stage");
+    if (eventStage && upcoming.length > 1 && !reduced) {
+      eventScrollTimer = setInterval(function () {
+        if (eventStage.matches(":hover") || eventStage.contains(document.activeElement)) return;
+        var maxScroll = eventStage.scrollWidth - eventStage.clientWidth;
+        if (maxScroll <= 0) return;
+        if (eventStage.scrollLeft >= maxScroll - 1) eventStage.scrollLeft = 0;
+        else eventStage.scrollLeft += 1.5;
+      }, 20);
+      eventStage.addEventListener("touchstart", function () { if (eventScrollTimer) clearInterval(eventScrollTimer); eventScrollTimer = null; }, { once: true, passive: true });
+    }
+    if (goalScrollTimer) { clearInterval(goalScrollTimer); goalScrollTimer = null; }
+    var goalStage = document.querySelector("#page-home .goal-stage");
+    if (goalStage && activeGoals.length > 1 && !reduced) {
+      goalScrollTimer = setInterval(function () {
+        if (goalStage.matches(":hover") || goalStage.contains(document.activeElement)) return;
+        var maxScroll = goalStage.scrollWidth - goalStage.clientWidth;
+        if (maxScroll <= 0) return;
+        if (goalStage.scrollLeft >= maxScroll - 1) goalStage.scrollLeft = 0;
+        else goalStage.scrollLeft += 1.5;
+      }, 20);
+      goalStage.addEventListener("touchstart", function () { if (goalScrollTimer) clearInterval(goalScrollTimer); goalScrollTimer = null; }, { once: true, passive: true });
+    }
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        var fg = $("#ringfg");
+        if (fg) fg.setAttribute("stroke-dashoffset", (parseFloat(fg.dataset.c) * (1 - fg.dataset.p / 100)).toFixed(1));
+        document.querySelectorAll("#page-home .bar > i").forEach(function (el) { el.style.width = el.dataset.w + "%"; });
+      });
+    });
+    var pn = $("#pctnum");
+    if (pn && animate !== false && !reduced) {
+      var to = +pn.dataset.to, t0 = performance.now();
+      (function step(now) {
+        var k = Math.min(1, (now - t0) / 1200);
+        pn.textContent = bn(Math.round(to * (1 - Math.pow(1 - k, 3))));
+        if (k < 1) requestAnimationFrame(step);
+      })(t0);
+    }
+  }
+
+  function renderChapters() {
+    var b = bookById(ui.book), list = chaptersOf(ui.book, ui.paper), ps = paperStats(ui.book, ui.paper);
+    var pills = SYL.map(function (x) {
+      return '<button class="spill" style="--c:' + x.color + '" data-act="book" data-book="' + x.id + '" aria-pressed="' + (x.id === ui.book) + '">' + x.icon + " " + x.name + "</button>";
+    }).join("");
+    var seg = b.papers.map(function (p) {
+      return '<button type="button" data-act="paper" data-paper="' + p.id + '" aria-pressed="' + (p.id === ui.paper) + '">' + p.name + "</button>";
+    }).join("");
+    var rows = list.map(function (c, i) {
+      var pct = chapterPct(c.id), done = pct === 100, doing = !!state.doing[c.id] && !done;
+      var pr = state.chapterProgress[c.id] || { mcq: !!state.done[c.id], cq: !!state.done[c.id] };
+      var cls = "ch" + (done ? " done" : "") + (doing ? " doing" : "") + (ui.justDone === c.id ? " pop" : "");
+      var right = ui.edit
+        ? '<button class="eb" data-act="ren-ch" data-id="' + c.id + '" aria-label="নাম বদলাও">✏️</button><button class="eb" data-act="del-ch" data-id="' + c.id + '" aria-label="মুছে ফেলো">🗑️</button>'
+        : '<span class="mini">' + bn(pct) + '%</span>';
+      var parts = (!ui.edit && ui.selectedChapter === c.id) ? '<div class="chosen-study"><button class="study-part' + (pr.mcq ? ' on' : '') + '" data-act="chapter-part" data-part="mcq" data-id="' + c.id + '">' + (pr.mcq ? '✓ ' : '') + 'MCQ · ৬০%</button><button class="study-part' + (pr.cq ? ' on' : '') + '" data-act="chapter-part" data-part="cq" data-id="' + c.id + '">' + (pr.cq ? '✓ ' : '') + 'CQ · ৪০%</button></div>' : '';
+      return '<div class="chlist-row"><div class="' + cls + '"><div class="no">' + bn(i + 1) + '</div><button class="nm" data-act="' + (ui.edit ? "ren-ch" : "select-chapter") + '" data-id="' + c.id + '">' + esc(c.n) + '</button>' + right + '</div>' + parts + '</div>';
+    }).join("");
+    var cel = ps.total && ps.done === ps.total ? '<div class="celebrate">🎉 ' + b.name + " " + paperName(ui.book, ui.paper) + " পুরো শেষ! অসাধারণ!</div>" : "";
+    $("#page-chapters").innerHTML =
+      '<h2 class="pt display">চ্যাপ্টার ট্র্যাকার</h2>' +
+      '<div class="pills">' + pills + "</div>" +
+      '<div class="seg" data-active="' + ui.paper + '"><span class="seg-thumb" aria-hidden="true"></span>' + seg + "</div>" +
+      '<div class="paper-stage' + (ui.paperDirection === 'next' ? ' paper-enter-next' : ui.paperDirection === 'prev' ? ' paper-enter-prev' : '') + '"><div class="card"><div class="paperhead"><b>' + b.icon + " " + b.name + " " + paperName(ui.book, ui.paper) + '</b><span class="muted">' + bn(ps.done) + "/" + bn(ps.total) + " · " + bn(ps.pct) + '%</span></div>' +
+      '<div class="bar' + (ps.pct === 100 ? " green" : "") + '" style="--c:' + b.color + '"><i style="width:' + ps.pct + '%"></i></div>' +
+      '</div>' +
+      cel +
+      '<div class="chlist">' + (rows || '<div class="empty">কোনো চ্যাপ্টার নেই।</div>') + "</div>" +
+      '<div class="addrow">' +
+      (ui.edit ? '<button class="btn" data-act="add-ch">➕ চ্যাপ্টার যোগ করো</button>' : "") +
+      '<button class="btn ghost" data-act="edit-mode">' + (ui.edit ? "✔️ এডিট শেষ" : "✏️ চ্যাপ্টার এডিট করো") + "</button></div></div>";
+    ui.paperDirection = null;
+    ui.justDone = null;
+  }
+
+  function linkOptions(sel) {
+    var o = '<option value="">কোনো বইয়ের সাথে যুক্ত নয়</option>';
+    SYL.forEach(function (b) {
+      b.papers.forEach(function (p) {
+        var v = b.id + ":" + p.id;
+        o += '<option value="' + v + '"' + (sel === v ? " selected" : "") + ">" + b.name + " " + p.name + "</option>";
+      });
+    });
+    return o;
+  }
+
+  function renderGoals() {
+    var t = today(), wc = weekCount();
+    var items = state.goals.map(function (g) {
+      var prog = "", done = g.done, pct = 0;
+      if (g.link) {
+        var l = g.link.split(":");
+        if (state.syl[l[0]] && state.syl[l[0]][l[1]]) {
+          var s = paperStats(l[0], l[1]);
+          pct = s.pct;
+          if (pct === 100) done = true;
+          prog = '<div class="bar' + (pct === 100 ? " green" : "") + '" style="margin-top:6px;--c:' + bookById(l[0]).color + '"><i style="width:' + pct + '%"></i></div><div class="muted">' + bn(s.done) + "/" + bn(s.total) + " চ্যাপ্টার · " + bn(pct) + "%</div>";
+        }
+      }
+      var remaining = g.date ? daysBetween(t, g.date) : null;
+      var due = g.date ? '<div class="goal-countdown"><span class="badge">📅 ' + fmtBn(g.date) + '</span><span class="badge ' + (!done && remaining <= 3 ? "hot" : "") + '">⏳ ' + (remaining < 0 ? countdown(g.date) : remaining === 0 ? 'আজ শেষ দিন!' : countdown(g.date) + ' বাকি') + '</span></div>' : '';
+      return '<div class="item' + (done ? " done" : "") + '"><button class="chk" data-act="goal-toggle" data-id="' + g.id + '" aria-label="লক্ষ্য শেষ">✓</button><div class="body"><div class="tt">' + esc(g.title) + "</div>" + due + prog + '</div><button class="del" data-act="goal-del" data-id="' + g.id + '" aria-label="মুছে ফেলো">🗑️</button></div>';
+    }).join("");
+    var goalLink = document.getElementById("gLink");
+    if (goalLink) { var oldLink = goalLink.value; goalLink.innerHTML = linkOptions(""); if (oldLink) goalLink.value = oldLink; }
+    $("#page-goals").innerHTML =
+      '<h2 class="pt display">আমার লক্ষ্য</h2>' +
+      '<div class="event-add-clean"><button class="btn" data-act="goal-open">Add Goal ➕</button></div>' +
+      '<div class="sec">' + (items || '<div class="empty">🎯 এখনো কোনো লক্ষ্য নেই। প্রথমটা সেট করো!</div>') + "</div>";
+  }
+
+  function renderEvents() {
+    var t = today(), up = [], past = [];
+    state.events.slice().sort(function (a, b) { return (a.date + (a.time || "")) < (b.date + (b.time || "")) ? -1 : 1; }).forEach(function (e) {
+      (e.date >= t ? up : past).push(e);
+    });
+    function row(e, isPast) {
+      var n = daysBetween(t, e.date), ty = ETYPE[e.type || "other"];
+      return '<div class="item' + (e.done ? " done" : "") + (isPast && !e.done ? " past" : "") + '"><button class="chk" data-act="ev-toggle" data-id="' + e.id + '" aria-label="শেষ">✓</button><div class="body"><div class="tt">' + ty[0] + " " + esc(e.title) +
+        '</div><span class="badge ' + (n === 0 ? "now" : (n >= 0 && n <= 3 ? "hot" : "")) + '">' + countdown(e.date) + '</span><span class="muted">' + ty[1] + " · " + fmtBn(e.date) + (e.time ? " · " + esc(e.time) : "") +
+        '</span></div><button class="del" data-act="ev-del" data-id="' + e.id + '" aria-label="মুছে ফেলো">🗑️</button></div>';
+    }
+    var types = Object.keys(ETYPE).map(function (k) { return '<option value="' + k + '">' + ETYPE[k][0] + " " + ETYPE[k][1] + "</option>"; }).join("");
+    var typeSelect = document.getElementById("eType");
+    if (typeSelect) { var oldType = typeSelect.value; typeSelect.innerHTML = types; if (oldType) typeSelect.value = oldType; }
+    $("#page-events").innerHTML =
+      '<h2 class="pt display">ইভেন্ট ট্র্যাকার</h2>' +
+      '<div class="event-add-clean"><button class="btn" data-act="ev-open">Add Event ➕</button></div>' +
+      '<div class="sec"><h3 style="margin:14px 0 0">আসন্ন</h3>' + (up.map(function (e) { return row(e, false); }).join("") || '<div class="empty">📅 কোনো আসন্ন ইভেন্ট নেই।</div>') + "</div>" +
+      (past.length ? '<div class="sec"><h3 style="margin:14px 0 0">পার হয়ে গেছে</h3>' + past.map(function (e) { return row(e, true); }).join("") + "</div>" : "");
+  }
+
+  function renderStopwatch() {
+    var running = timer.running, ms = timerElapsed();
+    var content = '<div class="timer-shell" id="timerShell">' +
+      '<div class="timer-digits" id="timerDigits">' + formatClock(ms, true) + '</div>' +
+      '<div class="timer-actions"><button class="btn ' + (running ? 'ghost' : '') + '" data-act="timer-start">' + (running ? (document.documentElement.lang === 'en' ? '⏸ Pause' : '⏸ বিরতি') : (document.documentElement.lang === 'en' ? '▶ Start' : '▶ শুরু')) + '</button><button class="btn ghost" data-act="timer-reset">↺ ' + (document.documentElement.lang === 'en' ? 'Reset' : 'রিসেট') + '</button><button class="btn ghost" data-act="timer-fullscreen">⛶ ' + (document.documentElement.lang === 'en' ? 'Fullscreen' : 'ফুলস্ক্রিন') + '</button></div>' +
+      '</div>';
+    if (ui.clockView === "countdown") { renderCountdown(); return; }
+    $("#page-stopwatch").innerHTML = '<h2 class="pt display"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12M6 22h12M7 2c0 5 5 6 5 10s-5 5-5 10M17 2c0 5-5 6-5 10s5 5 5 10"/></svg></span> Clock</h2>' + renderClockSwitch() + content;
+    // Newly rendered timer controls must use the currently selected language too.
+    try { applyLanguage(localStorage.getItem("shohan-language") || "bn"); } catch (e) { applyLanguage("bn"); }
+  }
+
+  function animateClockSwitch() {
+    var page = document.getElementById("page-stopwatch");
+    if (!page) return;
+    page.classList.remove("clock-enter-next", "clock-enter-prev");
+    void page.offsetWidth;
+    page.classList.add(ui.clockDirection === "next" ? "clock-enter-next" : "clock-enter-prev");
+    ui.clockDirection = null;
+    setTimeout(function () { page.classList.remove("clock-enter-next", "clock-enter-prev"); }, 240);
+  }
+
+  function renderClockSwitch() {
+    var en = localStorage.getItem('shohan-language') === 'en';
+    return '<div class="clock-switch" data-active="' + ui.clockView + '" role="group" aria-label="Clock tools"><span class="clock-thumb" aria-hidden="true"></span>' +
+      '<button type="button" data-act="clock-view" data-view="stopwatch" aria-pressed="' + (ui.clockView === "stopwatch" ? 'true' : 'false') + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5M9 2h6M12 2v3M19 6l1.5-1.5"/></svg>' + (en ? 'Stopwatch' : 'স্টপওয়াচ') + '</button>' +
+      '<button type="button" data-act="clock-view" data-view="countdown" aria-pressed="' + (ui.clockView === "countdown" ? 'true' : 'false') + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12M6 22h12M7 2c0 5 5 6 5 10s-5 5-5 10M17 2c0 5-5 6-5 10s5 5 5 10"/></svg>' + (en ? 'Countdown' : 'কাউন্টডাউন') + '</button>' +
+      '</div>';
+  }
+
+  function requestCountdownWakeLock() {
+    if (navigator.wakeLock && countdownTimer.running && !countdownTimer.wakeLock) {
+      navigator.wakeLock.request("screen").then(function (lock) {
+        countdownTimer.wakeLock = lock;
+        lock.addEventListener("release", function () { countdownTimer.wakeLock = null; });
+      }).catch(function () {});
+    }
+  }
+  function releaseCountdownWakeLock() {
+    if (countdownTimer.wakeLock) { countdownTimer.wakeLock.release().catch(function () {}); countdownTimer.wakeLock = null; }
+  }
+  function countdownCurrentRemaining() {
+    return countdownTimer.running ? Math.max(0, countdownTimer.startRemaining - (performance.now() - countdownTimer.startAt)) : countdownTimer.remaining;
+  }
+  function renderCountdown() {
+    var remaining = countdownCurrentRemaining();
+    var running = countdownTimer.running;
+    var en = (localStorage.getItem('shohan-language') === 'en');
+    var h = Math.floor(countdownTimer.duration / 3600000);
+    var m = Math.floor((countdownTimer.duration % 3600000) / 60000);
+    var sec = Math.floor((countdownTimer.duration % 60000) / 1000);
+    var content = '<div class="timer-shell" id="timerShell">' +
+      '<div class="timer-digits" id="countdownDigits">' + formatClock(remaining) + '</div>' +
+      '<div class="countdown-set" aria-label="Set countdown duration">' +
+      '<label>Hour<input id="countdownH" type="number" min="0" max="99" step="1" inputmode="numeric" value="' + h + '" aria-label="Hours"></label>' +
+      '<label>Minute<input id="countdownM" type="number" min="0" max="59" step="1" inputmode="numeric" value="' + m + '" aria-label="Minutes"></label>' +
+      '<label>Second<input id="countdownS" type="number" min="0" max="59" step="1" inputmode="numeric" value="' + sec + '" aria-label="Seconds"></label>' +
+      '</div>' +
+      '<div class="timer-actions"><button class="btn" data-act="countdown-start">' + (running ? (en ? '⏸ Pause' : '⏸ বিরতি') : (en ? '▶ Start' : '▶ শুরু')) + '</button>' +
+      '<button class="btn ghost" data-act="countdown-set">' + (en ? 'Set Time' : 'সময় সেট') + '</button>' +
+      '<button class="btn ghost" data-act="countdown-reset">↺ ' + (en ? 'Reset' : 'রিসেট') + '</button>' +
+      '<button class="btn ghost" data-act="timer-fullscreen">⛶ ' + (en ? 'Fullscreen' : 'ফুলস্ক্রিন') + '</button></div>' +
+      '</div>';
+    $("#page-stopwatch").innerHTML = '<h2 class="pt display"><span class="ni"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12M6 22h12M7 2c0 5 5 6 5 10s-5 6-5 10M17 2c0 5-5 6-5 10s5 5 5 10"/></svg></span> Clock</h2>' + renderClockSwitch() + content;
+    try { applyLanguage(localStorage.getItem("shohan-language") || "bn"); } catch (e) { applyLanguage("bn"); }
+  }
+  function countdownStartPause() {
+    if (countdownTimer.running) {
+      countdownTimer.remaining = countdownCurrentRemaining();
+      countdownTimer.running = false;
+      clearInterval(countdownTimer.interval); countdownTimer.interval = null; releaseCountdownWakeLock(); renderCountdown(); return;
+    }
+    if (countdownTimer.remaining <= 0) { toast(localStorage.getItem('shohan-language') === 'en' ? 'Set a countdown time first' : 'আগে কাউন্টডাউনের সময় সেট করো'); return; }
+    countdownTimer.startRemaining = countdownTimer.remaining;
+    countdownTimer.startAt = performance.now();
+    countdownTimer.running = true;
+    requestCountdownWakeLock();
+    countdownTimer.interval = setInterval(function () {
+      countdownTimer.remaining = countdownCurrentRemaining();
+      var d = document.getElementById('countdownDigits'); if (d) d.textContent = formatClock(countdownTimer.remaining);
+      var b = document.querySelector('#page-stopwatch [data-act="countdown-start"]');
+      if (b) b.textContent = countdownTimer.running ? (localStorage.getItem('shohan-language') === 'en' ? '⏸ Pause' : '⏸ বিরতি') : (localStorage.getItem('shohan-language') === 'en' ? '▶ Start' : '▶ শুরু');
+      if (countdownTimer.remaining <= 0) {
+        countdownTimer.remaining = 0; countdownTimer.running = false;
+        clearInterval(countdownTimer.interval); countdownTimer.interval = null; releaseCountdownWakeLock();
+        countdownBeep();
+        toast(localStorage.getItem('shohan-language') === 'en' ? '⏰ Countdown finished!' : '⏰ কাউন্টডাউন শেষ!');
+        if (b) b.textContent = localStorage.getItem('shohan-language') === 'en' ? '▶ Start' : '▶ শুরু';
+      }
+    }, 50);
+    var startButton = document.querySelector('#page-stopwatch [data-act="countdown-start"]');
+    if (startButton) startButton.textContent = localStorage.getItem('shohan-language') === 'en' ? '⏸ Pause' : '⏸ বিরতি';
+  }
+  function countdownBeep() {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      var ctx = new AC(); var osc = ctx.createOscillator(); var gain = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = 880; gain.gain.value = 0.12;
+      osc.connect(gain); gain.connect(ctx.destination); osc.start();
+      setTimeout(function () { try { osc.stop(); ctx.close(); } catch (e) {} }, 650);
+    } catch (e) {}
+  }
+
+  function rerenderTimerPreservingFullscreen() {
+    var wasFullscreen = !!(document.fullscreenElement && document.fullscreenElement.id === 'timerShell');
+    renderStopwatch();
+    if (wasFullscreen) {
+      var shell = document.getElementById('timerShell');
+      if (shell && shell.requestFullscreen) shell.requestFullscreen().then(function(){ if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){}); }).catch(function(){});
+    }
+  }
+  function timerStartPause() {
+    if (timer.running) { timer.elapsed = timerElapsed(); timer.running = false; clearInterval(timer.interval); timer.interval = null; releaseWakeLock(); if (document.fullscreenElement) { var bd = document.querySelector('#timerShell [data-act="timer-start"]'); if (bd) bd.textContent = (localStorage.getItem('shohan-language') === 'en' ? '▶ Start' : '▶ শুরু'); } else renderStopwatch(); return; }
+    if (ui.timerMode === "timer" && timer.target <= 0) { toast('আগে টাইমার সেট করো'); ui.timerMenuOpen = true; if (document.fullscreenElement) { var panel = document.getElementById('timerSettings'); if (panel) panel.hidden = false; } else renderStopwatch(); return; }
+    timer.running = true; timer.startAt = performance.now(); requestWakeLock();
+    timer.interval = setInterval(function () {
+      var ms = timerElapsed();
+      if (ui.timerMode === "timer" && ms >= timer.target) { timer.elapsed = timer.target; timer.running = false; clearInterval(timer.interval); timer.interval = null; releaseWakeLock(); toast('⏰ সময় শেষ!'); }
+      var d = $("#timerDigits"); if (d) d.innerHTML = formatClock(ui.timerMode === "timer" ? Math.max(0, timer.target - timerElapsed()) : timerElapsed(), ui.timerMode === "stopwatch");
+      var b = $("#page-stopwatch [data-act=timer-start]"); if (b) b.textContent = timer.running ? (localStorage.getItem('shohan-language') === 'en' ? '⏸ Pause' : '⏸ বিরতি') : (localStorage.getItem('shohan-language') === 'en' ? '▶ Start' : '▶ শুরু');
+    }, 50);
+    if (document.fullscreenElement) { var startBtn = document.querySelector('#timerShell [data-act="timer-start"]'); if (startBtn) startBtn.textContent = (localStorage.getItem('shohan-language') === 'en' ? '⏸ Pause' : '⏸ বিরতি'); }
+    else renderStopwatch();
+  }
+
+  // Fullscreen gestures: tap toggles start/pause; downward drag exits fullscreen.
+  var timerTouchStart = null, timerGestureAt = 0;
+  function beginTimerGesture(x, y, target) {
+    var shell = target && target.closest ? target.closest('#timerShell') : null;
+    if (!shell) return;
+    if (target.closest('button,input,select,label,.timer-settings')) { timerTouchStart = null; return; }
+    timerTouchStart = {x:x,y:y,at:Date.now()};
+  }
+  function finishTimerGesture(x, y) {
+    if (!timerTouchStart) return;
+    var start = timerTouchStart; timerTouchStart = null;
+    var dy = y-start.y, dx = x-start.x;
+    var shellNow = document.getElementById('timerShell');
+    var immersive = shellNow && (document.fullscreenElement === shellNow || shellNow.classList.contains('is-immersive'));
+    if (immersive && dy > 42 && dy > Math.abs(dx)*1.05) {
+      timerGestureAt = Date.now();
+      if (document.fullscreenElement) document.exitFullscreen().catch(function(){});
+      else { var shell = document.getElementById('timerShell'); if(shell) shell.classList.remove('is-immersive'); }
+      return;
+    }
+    if (Math.abs(dy) < 14 && Math.abs(dx) < 14 && Date.now()-timerGestureAt > 350) { if (ui.clockView === "countdown") countdownStartPause(); else timerStartPause(); }
+  }
+  document.addEventListener('touchstart', function(e){
+    if (!e.touches || !e.touches[0]) return;
+    beginTimerGesture(e.touches[0].clientX,e.touches[0].clientY,e.target);
+    if (timerTouchStart && document.getElementById('timerShell') && (document.fullscreenElement === document.getElementById('timerShell') || document.getElementById('timerShell').classList.contains('is-immersive'))) e.preventDefault();
+  }, {passive:false});
+  document.addEventListener('touchmove', function(e){
+    var shell = document.getElementById('timerShell');
+    if (timerTouchStart && shell && (document.fullscreenElement === shell || shell.classList.contains('is-immersive'))) e.preventDefault();
+  }, {passive:false});
+  document.addEventListener('touchend', function(e){
+    if (!e.changedTouches || !e.changedTouches[0]) return;
+    finishTimerGesture(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
+  }, {passive:false});
+  document.addEventListener('pointerdown', function(e){
+    if (e.pointerType === 'touch') return;
+    beginTimerGesture(e.clientX,e.clientY,e.target);
+  }, {passive:true});
+  document.addEventListener('pointerup', function(e){
+    if (e.pointerType === 'touch') return;
+    finishTimerGesture(e.clientX,e.clientY);
+  }, {passive:true});
+  // Direct-manipulation drag: the thumb follows the finger/mouse continuously.
+  (function enableLiveSliderDrag() {
+    var drag = null;
+    function selectorFor(target) {
+      if (!target || !target.closest) return null;
+      return target.closest('.seg, .clock-switch');
+    }
+    function moveThumb(e) {
+      if (!drag) return;
+      var rect = drag.el.getBoundingClientRect();
+      var thumb = drag.el.querySelector('.seg-thumb, .clock-thumb');
+      if (!thumb || rect.width <= 0) return;
+      var styles = window.getComputedStyle(drag.el);
+      var padL = parseFloat(styles.paddingLeft) || 0;
+      var padR = parseFloat(styles.paddingRight) || 0;
+      var thumbW = thumb.getBoundingClientRect().width;
+      var minLeft = padL;
+      var maxLeft = rect.width - padR - thumbW;
+      var left = Math.max(minLeft, Math.min(maxLeft, e.clientX - rect.left - thumbW / 2));
+      var baseLeft = drag.el.classList.contains('seg') ? 4 : 3;
+      thumb.style.transform = 'translateX(' + (left - baseLeft) + 'px)';
+    }
+    document.addEventListener('pointerdown', function(e) {
+      if (e.button !== undefined && e.button !== 0) return;
+      var el = selectorFor(e.target);
+      if (!el || el.closest('[hidden]')) return;
+      drag = { el: el, startX: e.clientX, moved: false, pointerId: e.pointerId };
+      el.classList.add('is-dragging');
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      moveThumb(e);
+    }, {passive:true});
+    document.addEventListener('pointermove', function(e) {
+      if (!drag || (drag.pointerId !== undefined && e.pointerId !== drag.pointerId)) return;
+      if (Math.abs(e.clientX - drag.startX) > 3) drag.moved = true;
+      if (drag.moved) moveThumb(e);
+    }, {passive:true});
+    function finish(e) {
+      if (!drag || (e && drag.pointerId !== undefined && e.pointerId !== drag.pointerId)) return;
+      var d = drag; drag = null;
+      d.el.classList.remove('is-dragging');
+      var thumb = d.el.querySelector('.seg-thumb, .clock-thumb');
+      if (thumb) thumb.style.transform = '';
+      if (!d.moved) return;
+      var rect = d.el.getBoundingClientRect();
+      var fraction = rect.width ? (e.clientX - rect.left) / rect.width : 0;
+      if (d.el.classList.contains('seg')) {
+        var nextPaper = fraction >= 0.5 ? 'p2' : 'p1';
+        if (nextPaper !== ui.paper && bookById(ui.book).papers.some(function(p) { return p.id === nextPaper; })) {
+          ui.paperDirection = nextPaper === 'p2' ? 'next' : 'prev';
+          ui.paper = nextPaper;
+          renderChapters();
+          try { if (localStorage.getItem('shohan-language') === 'en') applyLanguage('en'); } catch (_) {}
+        }
+      } else {
+        var nextView = fraction >= 0.5 ? 'countdown' : 'stopwatch';
+        if (nextView !== ui.clockView) {
+          ui.clockDirection = nextView === 'countdown' ? 'next' : 'prev';
+          ui.clockView = nextView;
+          renderStopwatch();
+          animateClockSwitch();
+        }
+      }
+    }
+    document.addEventListener('pointerup', finish, {passive:true});
+    document.addEventListener('pointercancel', finish, {passive:true});
+  })();
+
+  // Paper selector swipe: slow, deliberate left/right drag with animated content transition.
+  (function () {
+    var start = null;
+    var page = document.getElementById('page-chapters');
+    if (!page) return;
+    page.addEventListener('touchstart', function (e) {
+      if (!e.touches || !e.touches[0] || page.hidden || !e.target.closest('.seg')) { start = null; return; }
+      start = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }, { passive: true });
+    page.addEventListener('touchend', function (e) {
+      if (!start || !e.changedTouches || !e.changedTouches[0] || page.hidden) { start = null; return; }
+      var dx = e.changedTouches[0].clientX - start.x;
+      var dy = e.changedTouches[0].clientY - start.y;
+      start = null;
+      if (Math.abs(dx) < 35 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+      var next = dx < 0 ? 'p2' : 'p1';
+      if (next === ui.paper || !bookById(ui.book).papers.some(function (p) { return p.id === next; })) return;
+      ui.paperDirection = dx < 0 ? 'next' : 'prev';
+      ui.paper = next;
+      renderChapters();
+    }, { passive: true });
+    page.addEventListener('touchcancel', function () { start = null; }, { passive: true });
+  })();
+
+  // Clock view swipe navigation (isolated; does not alter stopwatch timing/controls).
+  (function () {
+    var clockSwipeStart = null;
+    var clockPage = document.getElementById('page-stopwatch');
+    if (!clockPage) return;
+    clockPage.addEventListener('touchstart', function (e) {
+      if (!e.touches || !e.touches[0] || clockPage.hidden) { clockSwipeStart = null; return; }
+      var shell = document.getElementById('timerShell');
+      if (document.fullscreenElement || (shell && shell.classList.contains('is-immersive'))) { clockSwipeStart = null; return; }
+      if (e.target.closest && e.target.closest('button,input,select,textarea,[contenteditable="true"]') && !(e.target.closest('.clock-switch'))) { clockSwipeStart = null; return; }
+      clockSwipeStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }, { passive: true });
+    clockPage.addEventListener('touchend', function (e) {
+      if (!clockSwipeStart || !e.changedTouches || !e.changedTouches[0] || clockPage.hidden) { clockSwipeStart = null; return; }
+      var dx = e.changedTouches[0].clientX - clockSwipeStart.x;
+      var dy = e.changedTouches[0].clientY - clockSwipeStart.y;
+      clockSwipeStart = null;
+      if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
+      var next = dx < 0 ? 'countdown' : 'stopwatch';
+      if (next === ui.clockView) return;
+      ui.clockDirection = next === 'countdown' ? 'next' : 'prev';
+      ui.clockView = next;
+      renderStopwatch();
+      animateClockSwitch();
+    }, { passive: true });
+    clockPage.addEventListener('touchcancel', function () { clockSwipeStart = null; }, { passive: true });
+  })();
+
+  document.addEventListener('fullscreenchange', function() {
+    if (document.fullscreenElement && document.fullscreenElement.id === 'timerShell') {
+      ui.timerMenuOpen = false; var panel = document.getElementById('timerSettings'); if (panel) panel.hidden = true;
+      var shell = document.getElementById('timerShell'); if (shell) shell.classList.add('is-immersive');
+      if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){});
+    } else {
+      var shell = document.getElementById('timerShell'); if (shell) shell.classList.remove('is-immersive');
+      if (screen.orientation && screen.orientation.unlock) { try { screen.orientation.unlock(); } catch(e){} }
+    }
+  });
+
+  function renderAll(animate) {
+    renderHome(animate); renderChapters(); renderGoals(); renderEvents(); renderStopwatch();
+    try { if (localStorage.getItem("shohan-language") === "en") applyLanguage("en"); } catch(e) {}
+  }
+
+  function show(page) {
+    ui.page = page;
+    ["home", "chapters", "goals", "events", "stopwatch"].forEach(function (p) { $("#page-" + p).hidden = p !== page; });
+    document.querySelectorAll(".nav button").forEach(function (b) {
+      if (b.dataset.page === page) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
+    if (page === "home") renderHome(true);
+    if (page === "chapters") renderChapters();
+    if (page === "goals") renderGoals();
+    if (page === "events") renderEvents();
+    if (page === "stopwatch") renderStopwatch();
+    try { if (localStorage.getItem("shohan-language") === "en") applyLanguage("en"); } catch(e) {}
+    window.scrollTo(0, 0);
+  }
+
+  /* ================= theme ================= */
+  function effectiveDark() {
+    var a = document.documentElement.getAttribute("data-theme");
+    if (a) return a === "dark";
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function applyMood(mode) {
+    if (mode === "device" || !mode) document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", mode);
+    try { localStorage.setItem("shohan-mode", mode || "device"); localStorage.setItem("shohan-theme", mode === "device" ? "" : mode); } catch(e) {}
+  }
+  function currentMood() { try { return localStorage.getItem("shohan-mode") || (localStorage.getItem("shohan-theme") || "device"); } catch(e) { return "device"; } }
+  function openSettings() {
+    var ov = $("#settingsOverlay"); if (!ov) return; ov.hidden = false;
+    var lang = "bn", mood = currentMood();
+    try { lang = localStorage.getItem("shohan-language") || "bn"; } catch(e) {}
+    document.querySelectorAll('input[name="appLanguage"]').forEach(function(el){ el.checked = el.value === lang; });
+    document.querySelectorAll('input[name="appMood"]').forEach(function(el){ el.checked = el.value === mood; });
+    var ni = $("#profileNameInput"), di = $("#profileDreamInput");
+    if (ni) ni.value = state.name || ""; if (di) di.value = state.dream || "";
+    updateProfileStats();
+  }
+  function updateProfileStats() {
+    var a = allStats(), doneGoals = state.goals.filter(function(g){return !!g.done;}).length;
+    var put = function(id, value){ var el = $("#"+id); if(el) el.textContent = value; };
+    put("profileDisplayName", state.name || "Student");
+    put("profileDisplayDream", state.dream || "Your study journey");
+    put("profileChapterDone", a.done + "/" + a.total);
+    put("profileStreak", String(streak()));
+    put("profileGoals", doneGoals + "/" + state.goals.length);
+    put("profileCheckins", String((state.days || []).length));
+  }
+  function exportProfileBackup() {
+    try {
+      var payload = JSON.stringify({app:"Study Tracker",version:1,exportedAt:new Date().toISOString(),data:state}, null, 2);
+      var blob = new Blob([payload], {type:"application/json"}), url = URL.createObjectURL(blob), a = document.createElement("a");
+      a.href = url; a.download = "study-tracker-backup-" + today() + ".json"; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      var status = $("#profileBackupStatus"); if(status) status.textContent = "Backup exported successfully.";
+    } catch(e) { var status = $("#profileBackupStatus"); if(status) status.textContent = "Could not export backup on this device."; }
+  }
+  function restoreProfileBackup(file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try {
+        var parsed = JSON.parse(String(reader.result || ""));
+        var incoming = parsed && parsed.data ? parsed.data : parsed;
+        if (!incoming || typeof incoming !== "object" || !incoming.syl || !incoming.goals || !incoming.days) throw new Error("Invalid backup");
+        if (!window.confirm("Restore this backup? Current tracker data will be replaced.")) return;
+        state = normalize(incoming); changed(); renderAll(false); openSettings();
+        var status = $("#profileBackupStatus"); if(status) status.textContent = "Backup restored successfully.";
+      } catch(e) { var status = $("#profileBackupStatus"); if(status) status.textContent = "Invalid backup file. Choose a Study Tracker JSON backup."; }
+    };
+    reader.onerror = function(){ var status = $("#profileBackupStatus"); if(status) status.textContent = "Could not read this file."; };
+    reader.readAsText(file);
+  }
+  try { var savedMode = localStorage.getItem("shohan-mode"); if (savedMode === "dark" || savedMode === "light") document.documentElement.setAttribute("data-theme", savedMode); else document.documentElement.removeAttribute("data-theme"); var th = localStorage.getItem("shohan-theme"); if (!savedMode && th) document.documentElement.setAttribute("data-theme", th); } catch (e) {}
+
+  /* ================= actions ================= */
+  function findCh(id) {
+    var i, j, k;
+    for (i = 0; i < SYL.length; i++) for (j = 0; j < SYL[i].papers.length; j++) {
+      var l = chaptersOf(SYL[i].id, SYL[i].papers[j].id);
+      for (k = 0; k < l.length; k++) if (l[k].id === id) return { list: l, idx: k, b: SYL[i].id, p: SYL[i].papers[j].id };
+    }
+    return null;
+  }
+
+  var actions = {
+    nav: function (t) { show(t.dataset.page); },
+    "settings-menu": function () { openSettings(); },
+    "settings-close": function () { $("#settingsOverlay").hidden = true; },
+    "profile-save": function () {
+      var n = $("#profileNameInput").value.trim(), d = $("#profileDreamInput").value.trim();
+      if (!n) { toast("নাম লেখো"); return; }
+      state.name = n.slice(0,30); state.dream = d.slice(0,80); changed(); renderHome(false); updateProfileStats(); toast("প্রোফাইল সেভ হয়েছে");
+    },
+    "profile-export": function () { exportProfileBackup(); },
+    "profile-import-pick": function () { var f = $("#profileImportFile"); if(f) f.click(); },
+    theme: function () {
+      var dark = effectiveDark();
+      var next = dark ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      try { localStorage.setItem("shohan-theme", next); } catch (e) {}
+      },
+    "set-name": function () {
+      askText("তোমার নাম কী?", state.name, "নাম লেখো").then(function (v) {
+        if (v) { state.name = v.slice(0, 30); changed(); renderHome(false); }
+      });
+    },
+    "set-dream": function () {
+      askText("তোমার স্বপ্ন বা বড় লক্ষ্য কী?", state.dream, "যেমন: GPA ৫ আর ভালো ভার্সিটিতে চান্স").then(function (v) {
+        if (v !== null) { state.dream = v.slice(0, 80); changed(); renderHome(false); }
+      });
+    },
+    checkin: function (t) {
+      var d = today(), i = state.days.indexOf(d);
+      if (i >= 0) { state.days.splice(i, 1); } else {
+        state.days.push(d);
+        if (state.days.length > 400) state.days = state.days.slice(-400);
+        var r = t.getBoundingClientRect();
+        confetti(r.left + r.width / 2, r.top, 60);
+        toast("🔥 দারুণ! আজকের স্ট্রিক বজায় থাকল");
+      }
+      changed(); renderHome(false);
+    },
+    "goto-book": function (t) { ui.book = t.dataset.book; ui.paper = "p1"; ui.edit = false; show("chapters"); },
+    "goto-ch": function (t) { ui.book = t.dataset.book; ui.paper = t.dataset.paper; ui.edit = false; show("chapters"); },
+    book: function (t) { ui.book = t.dataset.book; ui.paper = "p1"; ui.edit = false; renderChapters(); },
+    paper: function (t) { var next = t.dataset.paper; if (next === ui.paper) return; ui.paperDirection = next === "p2" ? "next" : "prev"; ui.paper = next; renderChapters(); },
+    "edit-mode": function () { ui.edit = !ui.edit; renderChapters(); },
+    "select-chapter": function (t) { ui.selectedChapter = ui.selectedChapter === t.dataset.id ? null : t.dataset.id; renderChapters(); },
+    "chapter-part": function (t) {
+      var id = t.dataset.id, part = t.dataset.part;
+      if (!state.chapterProgress[id]) state.chapterProgress[id] = { mcq: !!state.done[id], cq: !!state.done[id] };
+      state.chapterProgress[id][part] = !state.chapterProgress[id][part];
+      if (state.chapterProgress[id].mcq && state.chapterProgress[id].cq) { state.done[id] = today(); delete state.doing[id]; }
+      else delete state.done[id];
+      changed(); renderChapters(); renderHome(false); renderGoals();
+      toast('চ্যাপ্টার প্রগ্রেস: ' + bn(chapterPct(id)) + '%');
+    },
+    "toggle-ch": function (t) {
+      var id = t.dataset.id, r = t.getBoundingClientRect();
+      if (state.done[id]) { delete state.done[id]; state.chapterProgress[id] = { mcq: false, cq: false }; }
+      else {
+        state.chapterProgress[id] = { mcq: true, cq: true }; state.done[id] = today();
+        delete state.doing[id];
+        ui.justDone = id;
+        var ps = paperStats(ui.book, ui.paper);
+        var all = ps.done + 1 === ps.total;
+        confetti(r.left + r.width / 2, r.top + r.height / 2, all ? 140 : 45);
+        toast(all ? "🏆 পুরো বই শেষ! অসাধারণ!" : "🎉 শাবাশ! আরেকটা চ্যাপ্টার সবুজ হলো");
+      }
+      changed(); renderChapters();
+    },
+    "doing-ch": function (t) {
+      var id = t.dataset.id;
+      if (state.doing[id]) delete state.doing[id]; else state.doing[id] = true;
+      changed(); renderChapters();
+    },
+    "ren-ch": function (t) {
+      var f = findCh(t.dataset.id); if (!f) return;
+      askText("চ্যাপ্টারের নাম", f.list[f.idx].n, "নাম লেখো").then(function (v) {
+        if (v) { f.list[f.idx].n = v.slice(0, 80); changed(); renderChapters(); }
+      });
+    },
+    "del-ch": function (t) {
+      var f = findCh(t.dataset.id); if (!f) return;
+      var id = f.list[f.idx].id;
+      askConfirm("\"" + f.list[f.idx].n + "\" মুছে ফেলবে?", "মুছে ফেলো").then(function (ok) {
+        if (!ok) return;
+        f.list.splice(f.idx, 1); delete state.done[id]; delete state.doing[id]; delete state.chapterProgress[id];
+        changed(); renderChapters();
+      });
+    },
+    "add-ch": function () {
+      askText("নতুন চ্যাপ্টারের নাম", "", "নাম লেখো").then(function (v) {
+        if (!v) return;
+        chaptersOf(ui.book, ui.paper).push({ id: uid(), n: v.slice(0, 80) });
+        changed(); renderChapters();
+      });
+    },
+    "clock-view": function (t) {
+      var next = t.dataset.view;
+      if (next !== "stopwatch" && next !== "countdown") return;
+      if (next === ui.clockView) return;
+      if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+      ui.clockDirection = next === 'countdown' ? 'next' : 'prev';
+      ui.clockView = next;
+      renderStopwatch();
+      animateClockSwitch();
+    },
+    "countdown-set": function () {
+      var hEl = $("#countdownH"), mEl = $("#countdownM"), sEl = $("#countdownS");
+      if (!hEl || !mEl || !sEl) return;
+      var h = Math.max(0, Math.min(99, Math.floor(Number(hEl.value) || 0)));
+      var m = Math.max(0, Math.min(59, Math.floor(Number(mEl.value) || 0)));
+      var sec = Math.max(0, Math.min(59, Math.floor(Number(sEl.value) || 0)));
+      var total = (h * 3600 + m * 60 + sec) * 1000;
+      if (total <= 0) { toast(localStorage.getItem('shohan-language') === 'en' ? 'Enter a time greater than zero' : 'শূন্যের চেয়ে বেশি সময় দাও'); return; }
+      countdownTimer.running = false; clearInterval(countdownTimer.interval); countdownTimer.interval = null; releaseCountdownWakeLock();
+      countdownTimer.duration = total; countdownTimer.remaining = total; countdownTimer.startRemaining = total;
+      renderCountdown(); toast(localStorage.getItem('shohan-language') === 'en' ? 'Countdown time set' : 'কাউন্টডাউনের সময় সেট হয়েছে');
+    },
+    "countdown-start": function () { countdownStartPause(); },
+    "countdown-reset": function () {
+      countdownTimer.running = false; clearInterval(countdownTimer.interval); countdownTimer.interval = null; releaseCountdownWakeLock();
+      countdownTimer.remaining = countdownTimer.duration; countdownTimer.startRemaining = countdownTimer.duration; renderCountdown();
+    },
+    "timer-mode": function (t) {
+      if (timer.running) { timer.elapsed = timerElapsed(); timer.running = false; clearInterval(timer.interval); timer.interval = null; releaseWakeLock(); }
+      ui.timerMode = t.dataset.mode; timer.elapsed = 0; timer.target = 0; ui.timerMenuOpen = false; rerenderTimerPreservingFullscreen();
+    },
+    "timer-set": function () {
+      var h = Math.max(0, Math.min(99, +($("#timerH").value || 0))), m = Math.max(0, Math.min(59, +($("#timerM").value || 0))), sec = Math.max(0, Math.min(59, +($("#timerS").value || 0)));
+      timer.target = (h * 3600 + m * 60 + sec) * 1000; timer.elapsed = 0; timer.running = false; clearInterval(timer.interval); timer.interval = null; releaseWakeLock(); ui.timerMenuOpen = false; rerenderTimerPreservingFullscreen(); toast('টাইমার সেট হয়েছে');
+    },
+    "timer-start": function () { timerStartPause(); },
+    "timer-menu": function () { ui.timerMenuOpen = !ui.timerMenuOpen; var panel = document.getElementById('timerSettings'); if (panel) panel.hidden = !ui.timerMenuOpen; else rerenderTimerPreservingFullscreen(); },
+    "timer-reset": function () { timer.running = false; timer.elapsed = 0; clearInterval(timer.interval); timer.interval = null; releaseWakeLock(); rerenderTimerPreservingFullscreen(); },
+    "timer-fullscreen": function () {
+      var el = $("#timerShell");
+      if (document.fullscreenElement) { document.exitFullscreen().catch(function () {}); }
+      else if (el && el.requestFullscreen) el.requestFullscreen().then(function(){ if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){}); }).catch(function () { toast('এই ব্রাউজারে ফুলস্ক্রিন চালু করা যায়নি'); });
+      else toast('এই ব্রাউজারে ফুলস্ক্রিন সমর্থিত নয়');
+    },
+    "weekly-inc": function () { state.weekly = Math.min(30, state.weekly + 1); changed(); renderGoals(); },
+    "weekly-dec": function () { state.weekly = Math.max(1, state.weekly - 1); changed(); renderGoals(); },
+    "goal-open": function () {
+      var modal = $("#goalAddModal"); $("#gTitle").value = ""; $("#gDate").value = "";
+      var gl = $("#gLink"); if (gl) { gl.innerHTML = linkOptions(""); gl.value = ""; }
+      modal.hidden = false; setTimeout(function(){ $("#gTitle").focus(); },30);
+    },
+    "goal-close": function () { $("#goalAddModal").hidden = true; },
+    "goal-add": function () {
+      var title = $("#gTitle").value.trim();
+      if (!title) { toast(document.documentElement.lang === "en" ? "Enter a goal name first" : "আগে লক্ষ্যের নাম লেখো"); $("#gTitle").focus(); return; }
+      state.goals.unshift({ id: uid(), title: title.slice(0, 100), date: $("#gDate").value || "", link: $("#gLink").value || "", done: false });
+      changed(); $("#goalAddModal").hidden = true; renderGoals(); renderHome(false);
+      try { if (localStorage.getItem("shohan-language") === "en") applyLanguage("en"); } catch(e) {}
+      toast(document.documentElement.lang === "en" ? "🎯 Goal added" : "🎯 নতুন লক্ষ্য যোগ হয়েছে");
+    },
+    "goal-toggle": function (t) {
+      var g = state.goals.filter(function (x) { return x.id === t.dataset.id; })[0]; if (!g) return;
+      g.done = !g.done;
+      if (g.done) { var r = t.getBoundingClientRect(); confetti(r.left + 15, r.top + 15, 50); toast("🌟 লক্ষ্য পূরণ! দারুণ!"); }
+      changed(); renderGoals(); renderHome(false);
+      try { if (localStorage.getItem("shohan-language") === "en") applyLanguage("en"); } catch(e) {}
+    },
+    "goal-del": function (t) {
+      askConfirm("এই লক্ষ্যটি মুছে ফেলবে?", "মুছে ফেলো").then(function (ok) {
+        if (!ok) return;
+        state.goals = state.goals.filter(function (x) { return x.id !== t.dataset.id; });
+        changed(); renderGoals(); renderHome(false);
+        try { if (localStorage.getItem("shohan-language") === "en") applyLanguage("en"); } catch(e) {}
+      });
+    },
+    "ev-open": function () {
+      var modal = $("#eventAddModal");
+      $("#eDate").value = today(); $("#eTime").value = ""; $("#eTitle").value = "";
+      modal.hidden = false;
+      setTimeout(function () { $("#eTitle").focus(); }, 30);
+    },
+    "ev-close": function () { $("#eventAddModal").hidden = true; },
+    "ev-add": function () {
+      var title = $("#eTitle").value.trim(), date = $("#eDate").value;
+      if (!title) { toast("আগে ইভেন্টের নাম লেখো"); $("#eTitle").focus(); return; }
+      if (!date) { toast("তারিখ বেছে নাও"); $("#eDate").focus(); return; }
+      state.events.push({ id: uid(), title: title.slice(0, 100), date: date, time: $("#eTime").value || "", type: $("#eType").value, done: false });
+      changed(); $("#eventAddModal").hidden = true; renderEvents(); toast("📅 ইভেন্ট যোগ হয়েছে");
+    },
+    "ev-toggle": function (t) {
+      var e = state.events.filter(function (x) { return x.id === t.dataset.id; })[0]; if (!e) return;
+      e.done = !e.done;
+      if (e.done) { var r = t.getBoundingClientRect(); confetti(r.left + 15, r.top + 15, 35); }
+      changed(); renderEvents();
+    },
+    "ev-del": function (t) {
+      askConfirm("এই ইভেন্টটি মুছে ফেলবে?", "মুছে ফেলো").then(function (ok) {
+        if (!ok) return;
+        state.events = state.events.filter(function (x) { return x.id !== t.dataset.id; });
+        changed(); renderEvents();
+      });
+    }
+  };
+
+  // Swipe across the chapter content to switch between Paper 1 and Paper 2.
+  // Swipes that start on the paper selector itself are left for its horizontal scrolling.
+  (function enablePaperSwipe() {
+    var chapterPage = $("#page-chapters"), startX = 0, startY = 0, started = false;
+    chapterPage.addEventListener("touchstart", function(e) {
+      if (ui.page !== "chapters" || !e.touches || e.touches.length !== 1) { started = false; return; }
+      if (e.target.closest("input, textarea, select")) { started = false; return; }
+      startX = e.touches[0].clientX; startY = e.touches[0].clientY; started = true;
+    }, {passive:true});
+    chapterPage.addEventListener("touchend", function(e) {
+      if (!started || ui.page !== "chapters" || !e.changedTouches || !e.changedTouches.length) return;
+      started = false;
+      var dx = e.changedTouches[0].clientX - startX;
+      var dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
+      var papers = bookById(ui.book).papers;
+      if (papers.length < 2) return;
+      var current = papers.findIndex(function(p) { return p.id === ui.paper; });
+      var next = dx < 0 ? Math.min(current + 1, papers.length - 1) : Math.max(current - 1, 0);
+      if (next === current) return;
+      ui.paper = papers[next].id;
+      ui.selectedChapter = null;
+      renderChapters();
+      try { if (localStorage.getItem("shohan-language") === "en") applyLanguage("en"); } catch(err) {}
+    }, {passive:true});
+    chapterPage.addEventListener("touchcancel", function() { started = false; }, {passive:true});
+  })();
+
+  // Tap the motivation box to immediately show the next quote; the 8-second rotation remains active.
+  document.addEventListener("click", function (e) {
+    var qbox = e.target.closest("#qwrap");
+    if (qbox && ui.page === "home") { motGo(MOT.i + 1); return; }
+    var t = e.target.closest("[data-act]");
+    if (!t) return;
+    var fn = actions[t.dataset.act];
+    if (fn) fn(t, e);
+  });
+  document.addEventListener("keydown", function(e) {
+    var qbox = e.target.closest && e.target.closest("#qwrap");
+    if (qbox && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); if (ui.page === "home") motGo(MOT.i + 1); }
+  });
+  document.addEventListener("change", function(e) {
+    var t = e.target;
+    if (t && t.name === "appMood") applyMood(t.value);
+    if (t && t.name === "appLanguage") {
+      try { localStorage.setItem("shohan-language", t.value); } catch(err) {}
+      document.documentElement.lang = t.value === "en" ? "en" : "bn";
+      renderAll(false);
+      applyLanguage(t.value);
+    }
+  });
+  $("#settingsOverlay").addEventListener("click", function(e) { if (e.target === this) this.hidden = true; });
+  $("#profileImportFile").addEventListener("change", function(e) { var f = e.target.files && e.target.files[0]; if(f) restoreProfileBackup(f); e.target.value = ""; });
+  $("#eventAddModal").addEventListener("click", function(e) { if (e.target === this) this.hidden = true; });
+  document.addEventListener("keydown", function(e) { if (e.key === "Escape") { var ov = $("#settingsOverlay"); if (ov) ov.hidden = true; var em = $("#eventAddModal"); if (em) em.hidden = true; } if (e.key === "Enter" && e.target && e.target.id === "eTitle" && !$("#eventAddModal").hidden) { e.preventDefault(); var add = $("#eventAddModal").querySelector('[data-act="ev-add"]'); if (add) add.click(); } });
+
+  function applyLanguage(lang) {
+    var dict = {
+      "হোম":"Home", "চ্যাপ্টার":"Chapters", "লক্ষ্য":"Goals", "ইভেন্ট":"Events", "স্টাডি ট্র্যাকার":"Study Tracker", "শুভ রাত্রি":"Good night", "শুভ সকাল":"Good morning", "শুভ দুপুর":"Good afternoon", "শুভ বিকাল":"Good afternoon", "শুভ সন্ধ্যা":"Good evening",
+      "মোট অগ্রগতি":"Overall Progress", "রবি":"Sun", "সোম":"Mon", "মঙ্গল":"Tue", "বুধ":"Wed", "বৃহ":"Thu", "শুক্র":"Fri", "শনি":"Sat",
+      "পরীক্ষা":"Exam", "ক্লাস টেস্ট":"Class Test", "অ্যাসাইনমেন্ট":"Assignment", "অন্যান্য":"Other",
+"চ্যাপ্টার শেষ":"Chapters completed", "দিন":"days", "স্ট্রিক":"Streak",
+      "আজকের পড়া শেষ":"Today's study completed", "আজ পড়েছি, চেক-ইন!":"I studied today — check in!",
+      "📅 পরের ইভেন্ট":"📅 Upcoming Events", "সব ইভেন্ট দেখো":"View all events", "বিষয়ভিত্তিক অগ্রগতি":"Subject Progress", "🎯 আমার লক্ষ্য":"🎯 My Goals", "সব লক্ষ্য দেখো":"View all goals", "লক্ষ্যের নাম":"Goal name", "শেষ তারিখ নেই":"No due date", "লক্ষ্য পূরণ":"Goal completed",
+      "কোনো আসন্ন ইভেন্ট নেই। ইভেন্ট ট্যাবে যোগ করো।":"No upcoming events. Add one in the Events tab.",
+      "কোনো আসন্ন ইভেন্ট নেই।":"No upcoming events.", "আমার স্বপ্ন:":"My dream:", "এখানে ট্যাপ করে তোমার স্বপ্ন লেখো":"Tap here to write your dream",
+      "চ্যাপ্টার এডিট করো":"Edit chapters", "এডিট শেষ":"Finish editing", "চ্যাপ্টার যোগ করো":"Add chapter",
+      "লক্ষ্য যোগ করো":"Add goal", "ইভেন্ট যোগ করো":"Add event", "মুছে ফেলো":"Delete", "নাম বদলাও":"Rename",
+      "শুরু":"Start", "বিরতি":"Pause", "রিসেট":"Reset", "ফুলস্ক্রিন":"Fullscreen", "পড়েছি":"Studied",
+      "ইভেন্ট ট্র্যাকার":"Event Tracker", "আসন্ন":"Upcoming", "পার হয়ে গেছে":"Past events", "নতুন ইভেন্ট যোগ করো":"Add Event",
+      "ইভেন্টের নাম":"Event name", "তারিখ":"Date", "সময়":"Time", "ঐচ্ছিক":"optional", "ইভেন্টের ধরন":"Event type",
+      "বাতিল":"Cancel", "টাইমার":"Timer", "স্টপওয়াচ":"Stopwatch", "বইয়ের সাথে যুক্ত করো":"Link to a book", "লক্ষ্যের নাম":"Goal name", "শেষ তারিখ":"Due date", "নাম লেখো":"Enter a name", "নতুন চ্যাপ্টারের নাম":"New chapter name", "চ্যাপ্টারের নাম":"Chapter name", "ঠিক আছে":"OK", "বন্ধ করো":"Close", "যেমন: পদার্থবিজ্ঞান ক্লাস টেস্ট":"e.g. Physics class test", "🎯 নতুন লক্ষ্য":"🎯 New Goal", "যেমন: পদার্থবিজ্ঞান ১ম পত্র শেষ করব":"e.g. Finish Physics Paper 1", "লক্ষ্য যোগ করো":"Add Goal", "এখনো কোনো লক্ষ্য নেই। Add Goal চাপ দিয়ে শুরু করো।":"No goals yet. Press Add Goal to get started.", "এখনো কোনো লক্ষ্য নেই। লক্ষ্য ট্যাবে যোগ করো।":"No goals yet. Add one in the Goals tab.",
+      "ইভেন্ট যোগ হয়েছে":"Event added", "শেষ":"Complete", "কোনো ইভেন্ট নেই":"No events yet", "ইভেন্ট ট্যাবে যোগ করো":"Add one in the Events tab",
+      "আমার লক্ষ্য":"My Goals", "সাপ্তাহিক টার্গেট":"Weekly target", "সপ্তাহে কয়টি চ্যাপ্টার শেষ করতে চাও? (সপ্তাহ শুরু শনিবার)":"How many chapters do you want to finish each week? (Week starts Saturday)",
+      "এই সপ্তাহে:":"This week:", "বাড়াও":"Increase", "কমাও":"Decrease", "শেষ তারিখ":"Due date", "বইয়ের সাথে যুক্ত করো":"Link to a book",
+      "বই যুক্ত করলে চ্যাপ্টার শেষ হওয়ার সাথে সাথে অগ্রগতি নিজে নিজেই বাড়বে।":"Link a book to automatically update progress when chapters are completed.",
+      "এখনো কোনো লক্ষ্য নেই। প্রথমটা সেট করো!":"No goals yet. Set your first one!", "পদার্থবিজ্ঞান":"Physics", "উচ্চতর গণিত":"Higher Math",
+      "রসায়ন":"Chemistry", "জীববিজ্ঞান":"Biology", "তথ্য ও যোগাযোগ প্রযুক্তি":"ICT", "বাংলা":"Bangla", "ইংরেজি":"English",
+      "১ম পত্র":"Paper 1", "২য় পত্র":"Paper 2", "মোট":"Total", "সম্পন্ন":"Completed", "বাকি":"Remaining", "অগ্রগতি":"Progress",
+      "সেটিংস":"Profile", "প্রোফাইল":"Profile", "চ্যাপ্টার ট্র্যাকার":"Chapter Tracker", "পুরো শেষ! অসাধারণ!":"completed! Great job!", "কোনো চ্যাপ্টার নেই।":"No chapters yet.", "সিলেবাস NCTB-র তালিকা অনুযায়ী দেওয়া আছে। তোমার বইয়ের সাথে না মিললে এডিট করে ঠিক করে নাও।":"The syllabus follows the NCTB list. Edit it if it does not match your book.", "চ্যাপ্টার প্রগ্রেস:":"Chapter progress:", "শাবাশ! আরেকটা চ্যাপ্টার সবুজ হলো":"Great job! Another chapter completed.", "দারুণ! আজকের স্ট্রিক বজায় থাকল":"Great! Your study streak continues.", "ভাষা":"Language", "মুড":"Mood", "অ্যাকাউন্ট":"Account", "পরে যোগ করা হবে":"Will be added later",
+      "সেভ":"Save", "সংরক্ষণ":"Save", "এডিট":"Edit", "যোগ করো":"Add", "নতুন লক্ষ্য":"New goal", "নতুন চ্যাপ্টার":"New chapter",
+      "স্টপওয়াচ":"Stopwatch", "চালু":"Start", "চালিয়ে যাও":"Keep going", "বিরতি নাও":"Take a break", "রিসেট করো":"Reset",
+      "ফোকাস":"Focus", "বিরতি সময়":"Break time", "মিনিট":"minutes", "সেকেন্ড":"seconds", "ঘণ্টা":"hours",
+      "আগে টাইমার সেট করো":"Set the timer first", "সময় শেষ!":"Time is up!", "এই লক্ষ্যটি মুছে ফেলবে?":"Delete this goal?",
+      "লক্ষ্য পূরণ! দারুণ!":"Goal completed! Great!", "আগে লক্ষ্যের নাম লেখো":"Enter a goal name first", "লক্ষ্য শেষ":"Complete goal",
+      "মুছে ফেলো":"Delete", "কমাও":"Decrease", "বাড়াও":"Increase", "চ্যাপ্টার ·":"chapters ·", "আজ শেষ দিন!":"Due today!",
+      "বাকি":"remaining", "দিন আগে":"days ago", "আগামীকাল":"Tomorrow", "আজ!":"Today!", "এখনো কোনো লক্ষ্য নেই।":"No goals yet.",
+      "প্রথমটা সেট করো!":"Set your first one!", "সব ইভেন্ট দেখো":"View all events", "সব লক্ষ্য দেখো":"View all goals",
+      "Add Goal চাপ দিয়ে শুরু করো":"Press Add Goal to get started.", "Add Event চাপ দিয়ে শুরু করো":"Press Add Event to get started.",
+      "শুরু করো":"Get started", "এখনো কোনো আসন্ন ইভেন্ট নেই।":"No upcoming events yet.", "ইভেন্ট শেষ হয়েছে":"Event completed",
+      "আজ পড়েছি, চেক-ইন!":"I studied today — check in!", "আজকের এক ঘণ্টার পড়া, আগামীকালের আত্মবিশ্বাস।":"One hour of study today, confidence tomorrow."
+    };
+    var reverse = {}; Object.keys(dict).forEach(function(k){ reverse[dict[k]] = k; });
+    var map = lang === "en" ? dict : reverse;
+    var keys = Object.keys(map).sort(function(a,b){ return b.length-a.length; });
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), nodes = [], n;
+    while ((n = walker.nextNode())) nodes.push(n);
+    nodes.forEach(function(node){
+      if (node.parentElement && node.parentElement.closest("#qwrap")) return; // Keep the motivation box bilingual/unchanged.
+      if (node.parentElement && node.parentElement.closest(".nm")) return; // Chapter names are user content: preserve exactly as entered.
+      var val = node.nodeValue;
+      keys.forEach(function(k){ if (val.indexOf(k) !== -1) val = val.split(k).join(map[k]); });
+      node.nodeValue = val;
+    });
+    // Translate user-facing attributes too (placeholders, accessibility labels, and titles).
+    document.querySelectorAll("[placeholder], [aria-label], [title]").forEach(function(el){
+      ["placeholder","aria-label","title"].forEach(function(attr){
+        var val = el.getAttribute(attr); if (!val) return;
+        keys.forEach(function(k){ if (val.indexOf(k) !== -1) val = val.split(k).join(map[k]); });
+        el.setAttribute(attr,val);
+      });
+    });
+    var navNames = lang === "en" ? ["Home","Chapters","Goals","Events","Clock"] : ["হোম","চ্যাপ্টার","লক্ষ্য","ইভেন্ট","Clock"];
+    document.querySelectorAll(".nav button").forEach(function(b,i){
+      var ni=b.querySelector(".ni"), textNode=null;
+      Array.prototype.forEach.call(b.childNodes,function(ch){ if(ch.nodeType===3 && ch.nodeValue.trim()) textNode=ch; });
+      if (!textNode) { textNode=document.createTextNode(""); b.appendChild(textNode); }
+      textNode.nodeValue=navNames[i];
+    });
+  }
+  try {
+    var savedLang = localStorage.getItem("shohan-language") || "bn";
+    document.documentElement.lang = savedLang === "en" ? "en" : "bn";
+    if (savedLang === "en") { setTimeout(function(){ applyLanguage("en"); }, 0); }
+    // Re-translate freshly rendered UI immediately after components are rebuilt.
+    if (window.MutationObserver) {
+      var languageObserver = new MutationObserver(function(records) {
+        if (languageObserver._busy) return;
+        var hasNewNodes = records.some(function(rec){ return rec.addedNodes && rec.addedNodes.length; });
+        if (!hasNewNodes) return;
+        languageObserver._busy = true;
+        try { applyLanguage(localStorage.getItem("shohan-language") || "bn"); } finally { languageObserver._busy = false; }
+      });
+      languageObserver.observe(document.body, {childList:true, subtree:true});
+    }
+  } catch(e) {}
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var t = e.target;
+    if (t && t.dataset && t.dataset.enter && actions[t.dataset.enter]) actions[t.dataset.enter](t, e);
+  });
+  window.addEventListener("resize", function () { if (crun) cResize(); });
+
+
+
+
+
+  /* ================= start ================= */
+  renderAll(true);
+  initDb();
+})();
+</script>
+
+</body>
+</html>
